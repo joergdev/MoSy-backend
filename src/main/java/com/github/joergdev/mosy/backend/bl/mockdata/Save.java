@@ -49,7 +49,9 @@ public class Save extends AbstractBL<MockData, SaveResponse>
                 .length() > com.github.joergdev.mosy.backend.persistence.model.MockData.LENGTH_REQUEST,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
-    leaveOn(Utils.isEmpty(request.getResponse()),
+    leaveOn(Utils.isEmpty(request.getResponse())
+            || request.getResponse()
+                .length() > com.github.joergdev.mosy.backend.persistence.model.MockData.LENGTH_RESPONSE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response"));
 
     leaveOn(request.getMockSession() != null && request.getMockSession().getMockSessionID() == null,
@@ -100,8 +102,13 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     // Name
     else
     {
-      return PersistenceUtil.getDbInterfaceMethodByServicePaths(this, apiInterfaceRequest.getName(),
-          apiInterfaceMethodRequest.getName());
+      InterfaceMethod dbInterfaceMethod = PersistenceUtil.getDbInterfaceMethodByServicePaths(this,
+          apiInterfaceRequest.getName(), apiInterfaceMethodRequest.getName());
+
+      apiInterfaceMethodRequest.setInterfaceMethodId(dbInterfaceMethod.getInterfaceMethodId());
+      apiInterfaceRequest.setInterfaceId(dbInterfaceMethod.getMockInterface().getInterfaceId());
+
+      return dbInterfaceMethod;
     }
   }
 

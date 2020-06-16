@@ -15,7 +15,6 @@ import javax.persistence.Table;
 public class RecordConfig
 {
   public static final int LENGTH_TITLE = 200;
-  public static final int LENGTH_REQUEST = 10000;
 
   @Column(name = "RECORD_CONFIG_ID")
   @Id
@@ -33,7 +32,7 @@ public class RecordConfig
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
 
-  @Column(name = "REQUEST_DATA", length = LENGTH_REQUEST)
+  @Column(name = "REQUEST_DATA", length = MockData.LENGTH_REQUEST)
   private String requestData;
 
   @Column(name = "ENABLED", length = 1, nullable = false, columnDefinition = "INT(1)")

@@ -75,7 +75,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // mock NOT enabled -> Routing
     else
     {
-      if (interfaceType.routingPossible)
+      if (interfaceType.directRoutingPossible)
       {
         doRouting(request.getContent(), dbInterface, baseData, dbMethod, interfaceType);
       }
@@ -102,7 +102,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     {
       if (routingOnNoMockData(dbInterface, dbMethod, baseData))
       {
-        if (interfaceType.routingPossible)
+        if (interfaceType.directRoutingPossible)
         {
           doRouting(request.getContent(), dbInterface, baseData, dbMethod, interfaceType);
         }

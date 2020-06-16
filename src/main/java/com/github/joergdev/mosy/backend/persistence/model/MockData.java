@@ -16,6 +16,7 @@ public class MockData
 {
   public static final int LENGTH_TITLE = 200;
   public static final int LENGTH_REQUEST = 10000;
+  public static final int LENGTH_RESPONSE = 50000;
 
   @Column(name = "MOCK_DATA_ID")
   @Id
@@ -37,7 +38,7 @@ public class MockData
   @Column(name = "REQUEST", length = LENGTH_REQUEST, nullable = true)
   private String request;
 
-  @Column(name = "RESPONSE", nullable = false)
+  @Column(name = "RESPONSE", length = LENGTH_RESPONSE, nullable = false)
   private String response;
 
   @ManyToOne

@@ -32,11 +32,11 @@ public class Save extends AbstractBL<Interface, SaveResponse>
 
     leaveOn(request.getType() == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("type"));
 
-    leaveOn(Boolean.TRUE.equals(request.getRoutingOnNoMockData()) && request.getType().routingPossible
+    leaveOn(Boolean.TRUE.equals(request.getRoutingOnNoMockData()) && request.getType().directRoutingPossible
             && Utils.isEmpty(request.getRoutingUrl()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("routingURL"));
 
-    leaveOn(!Utils.isEmpty(request.getRoutingUrl()) && !request.getType().routingPossible,
+    leaveOn(!Utils.isEmpty(request.getRoutingUrl()) && !request.getType().directRoutingPossible,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("routingURL not allowed"));
 
     leaveOn(!Utils.isEmpty(request.getRoutingUrl())

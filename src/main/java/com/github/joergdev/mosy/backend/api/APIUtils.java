@@ -50,10 +50,9 @@ public class APIUtils
       // handle EntityManager
       em = EntityManagerProviderService.getInstance().getEntityManager();
 
-      tx = em.getTransaction();
-
       if (!EntityManagerProviderService.getInstance().isContainerManaged())
       {
+        tx = em.getTransaction();
         tx.begin();
       }
 
@@ -78,16 +77,13 @@ public class APIUtils
     {
       LOG.error(ex.getMessage(), ex);
 
-      if (bl.getResponse() == null || !bl.getResponse().getMessages().stream()
+      if (bl.getResponse() != null && !bl.getResponse().getMessages().stream()
           .anyMatch(msg -> ResponseMessageLevel.ERROR.equals(msg.getResponseCode().level)))
       {
         bl.addResponseMessage(ResponseCode.UNEXPECTED_ERROR.withAddtitionalInfo(ex.getMessage()));
       }
 
-      if (tx != null)
-      {
-        tx.rollback();
-      }
+      EntityManagerProviderService.getInstance().rollbackEntityManager(em);
 
       blResponse.setStateOK(false);
 

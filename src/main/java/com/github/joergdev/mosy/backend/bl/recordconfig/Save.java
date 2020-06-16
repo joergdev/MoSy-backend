@@ -34,7 +34,7 @@ public class Save extends AbstractBL<RecordConfig, SaveResponse>
 
     leaveOn(!Utils.isEmpty(request.getRequestData())
             && request.getRequestData()
-                .length() > com.github.joergdev.mosy.backend.persistence.model.RecordConfig.LENGTH_REQUEST,
+                .length() > com.github.joergdev.mosy.backend.persistence.model.MockData.LENGTH_REQUEST,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("requestData too long"));
 
     leaveOn(request.getMockInterface() != null && request.getInterfaceMethod() != null,

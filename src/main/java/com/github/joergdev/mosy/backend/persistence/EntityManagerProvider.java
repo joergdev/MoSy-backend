@@ -8,5 +8,7 @@ public interface EntityManagerProvider
 
   void releaseEntityManager(EntityManager em);
 
+  void rollbackEntityManager(EntityManager em);
+
   boolean isContainerManaged();
 }

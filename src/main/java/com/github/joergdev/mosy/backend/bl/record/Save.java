@@ -7,6 +7,7 @@ import com.github.joergdev.mosy.api.response.record.SaveResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceType;
+import com.github.joergdev.mosy.backend.persistence.model.MockData;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -23,10 +24,11 @@ public class Save extends AbstractBL<Record, SaveResponse>
         request.getInterfaceMethod() == null || request.getInterfaceMethod().getInterfaceMethodId() == null,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("interface method"));
 
-    leaveOn(Utils.isEmpty(request.getRequestData()),
+    leaveOn(Utils.isEmpty(request.getRequestData())
+            || request.getRequestData().length() > MockData.LENGTH_REQUEST,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request data"));
 
-    leaveOn(Utils.isEmpty(request.getResponse()),
+    leaveOn(Utils.isEmpty(request.getResponse()) || request.getResponse().length() > MockData.LENGTH_RESPONSE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response data"));
   }
 

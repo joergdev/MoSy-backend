@@ -1,11 +1,14 @@
 package com.github.joergdev.mosy.backend.security;
 
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 public class TokenManagerService
 {
-  private static final int SECRET_HASH = "m0sy".hashCode();
+  private static final ResourceBundle MOSY_BACKEND = ResourceBundle.getBundle("mosy_backend");
+
+  private static final int SECRET_HASH = MOSY_BACKEND.getString("login_secret").hashCode();
 
   private static final TokenHolder TOKEN_HOLDER = new TokenHolder();
 

@@ -1,9 +1,5 @@
 package com.github.joergdev.mosy.backend.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,13 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.function.Supplier;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -44,8 +33,8 @@ public class MockServicesUtil
 
   public static boolean xmlContainsXml(String stack, String needle)
   {
-    Map<String, Object> mapStack = xmlToMap(stack);
-    Map<String, Object> mapNeedle = xmlToMap(needle);
+    Map<String, Object> mapStack = Utils.xmlToMap(stack);
+    Map<String, Object> mapNeedle = Utils.xmlToMap(needle);
 
     return mapContainsMap(mapStack, mapNeedle);
   }
@@ -56,24 +45,6 @@ public class MockServicesUtil
     Map<String, Object> mapNeedle = jsonToMap(needle);
 
     return mapContainsMap(mapStack, mapNeedle);
-  }
-
-  private static Map<String, Object> xmlToMap(String xml)
-  {
-    try
-    {
-      Document doc = getDocumentFromInputString(xml);
-
-      Map<String, Object> map = new HashMap<>();
-
-      nodeToMap(doc.getDocumentElement(), map);
-
-      return map;
-    }
-    catch (Exception ex)
-    {
-      throw new IllegalStateException(ex);
-    }
   }
 
   private static Map<String, Object> jsonToMap(String jason)
@@ -88,116 +59,6 @@ public class MockServicesUtil
     catch (Exception ex)
     {
       throw new IllegalStateException(ex);
-    }
-  }
-
-  private static void nodeToMap(Node node, Map<String, Object> map)
-  {
-    String name = node.getNodeName();
-    String content = node.getTextContent();
-
-    List<Node> childNodes = getChildNodes(node);
-
-    // dont transfer empty nodes
-    if (!childNodes.isEmpty() || !Utils.isEmpty(content))
-    {
-      if (childNodes.isEmpty())
-      {
-        map.put(name, content);
-      }
-      else
-      {
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> listForTag = (List<Map<String, Object>>) map.get(name);
-        if (listForTag == null)
-        {
-          listForTag = new ArrayList<>();
-          map.put(name, listForTag);
-        }
-
-        Map<String, Object> subMap = new HashMap<>();
-        listForTag.add(subMap);
-
-        childNodes.forEach(c -> nodeToMap(c, subMap));
-      }
-    }
-
-  }
-
-  private static List<Node> getChildNodes(Node rootNode)
-  {
-    List<Node> nodes = new ArrayList<>();
-
-    org.w3c.dom.NodeList nl = rootNode.getChildNodes();
-
-    for (int x = 0; x < nl.getLength(); x++)
-    {
-      Node n = nl.item(x);
-
-      if (isRelevantNode(n))
-      {
-        nodes.add(n);
-      }
-    }
-
-    return nodes;
-  }
-
-  private static boolean isRelevantNode(Node n)
-  {
-    if (Node.ELEMENT_NODE == n.getNodeType())
-    {
-      return true;
-    }
-    // TEXT_NODE -> false
-
-    return false;
-  }
-
-  private static Document getDocumentFromInputString(String xml)
-    throws Exception
-  {
-    Charset charset = getCharsetFromXml(xml);
-
-    byte[] bytes = charset == null
-        ? xml.getBytes()
-        : xml.getBytes(charset);
-
-    return getDocumentFromInputStream(() -> new ByteArrayInputStream(bytes));
-  }
-
-  private static Charset getCharsetFromXml(String xml)
-  {
-    try
-    {
-      XMLStreamReader xmlStreamReader = XMLInputFactory.newInstance()
-          .createXMLStreamReader(new StringReader(xml));
-
-      String charsetStr = xmlStreamReader.getCharacterEncodingScheme();
-
-      return Utils.isEmpty(charsetStr)
-          ? null
-          : Charset.forName(charsetStr);
-    }
-    catch (Exception ex)
-    {
-      throw new IllegalStateException(ex);
-    }
-  }
-
-  private static Document getDocumentFromInputStream(Supplier<InputStream> isSupplier)
-    throws Exception
-  {
-    try (InputStream is2 = isSupplier.get())
-    {
-      DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-      Document doc = dBuilder.parse(is2);
-
-      // opt. but recommended
-      doc.getDocumentElement().normalize();
-
-      return doc;
     }
   }
 

@@ -43,6 +43,13 @@ public class EntityManagerProviderService
     entityManagerProvider.releaseEntityManager(em);
   }
 
+  public void rollbackEntityManager(EntityManager em)
+  {
+    Objects.requireNonNull(entityManagerProvider, "entityManagerProvider not set");
+
+    entityManagerProvider.rollbackEntityManager(em);
+  }
+
   public boolean isContainerManaged()
   {
     Objects.requireNonNull(entityManagerProvider, "entityManagerProvider not set");

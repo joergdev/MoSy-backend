@@ -23,10 +23,10 @@ public class Record
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
 
-  @Column(name = "REQUEST_DATA", nullable = false)
+  @Column(name = "REQUEST_DATA", length = MockData.LENGTH_REQUEST, nullable = false)
   private String requestData;
 
-  @Column(name = "RESPONSE", nullable = false)
+  @Column(name = "RESPONSE", length = MockData.LENGTH_RESPONSE, nullable = false)
   private String response;
 
   @Column(name = "CREATED", updatable = false)
