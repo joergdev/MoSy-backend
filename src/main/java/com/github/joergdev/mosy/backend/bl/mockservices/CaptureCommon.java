@@ -61,8 +61,9 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this,
         request.getServicePathInterface());
     InterfaceType interfaceType = InterfaceType.getById(dbInterface.getType().getInterfaceTypeId());
+
     dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(),
-        dbInterface);
+        dbInterface, false);
 
     checkMockSession();
 

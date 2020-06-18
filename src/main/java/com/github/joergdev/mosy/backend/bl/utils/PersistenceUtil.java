@@ -17,7 +17,7 @@ public class PersistenceUtil
     Interface dbInterface = getDbInterfaceByServicePath(bl, servicePathInterface);
     if (dbInterface != null)
     {
-      return getDbInterfaceMethodByServicePath(bl, servicePathMethod, dbInterface);
+      return getDbInterfaceMethodByServicePath(bl, servicePathMethod, dbInterface, true);
     }
 
     return null;
@@ -35,7 +35,8 @@ public class PersistenceUtil
 
   public static InterfaceMethod getDbInterfaceMethodByServicePath(AbstractBL<?, ?> bl,
                                                                   String servicePathMethod,
-                                                                  Interface dbInterface)
+                                                                  Interface dbInterface,
+                                                                  boolean leaveOnNotFound)
   {
     if (Utils.isEmpty(servicePathMethod))
     {
