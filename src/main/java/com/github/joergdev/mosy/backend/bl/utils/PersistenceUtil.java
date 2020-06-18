@@ -46,7 +46,7 @@ public class PersistenceUtil
     InterfaceMethod dbMethod = bl.getDao(InterfaceMethodDAO.class)
         .getByServicePath(dbInterface.getInterfaceId(), servicePathMethod);
 
-    bl.leaveOn(dbMethod == null, ResponseCode.DATA_DOESNT_EXIST
+    bl.leaveOn(leaveOnNotFound && dbMethod == null, ResponseCode.DATA_DOESNT_EXIST
         .withAddtitionalInfo("interface method for servicepath: " + servicePathMethod));
 
     return dbMethod;
