@@ -88,6 +88,7 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     // save
     entityMgr.persist(dbMockData);
+    entityMgr.flush();
   }
 
   private InterfaceMethod getDbMethod()

@@ -61,6 +61,7 @@ public class Save extends AbstractBL<Record, SaveResponse>
 
     // save
     entityMgr.persist(dbRecord);
+    entityMgr.flush();
 
     id = dbRecord.getRecordId();
   }

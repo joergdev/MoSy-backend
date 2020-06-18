@@ -36,6 +36,7 @@ public class Save extends AbstractBL<BaseData, EmptyResponse>
     dbGlobalConfig.setTtlMockSession(request.getTtlMockSession());
 
     entityMgr.persist(dbGlobalConfig);
+    entityMgr.flush();
 
     saveRecordConfig();
   }

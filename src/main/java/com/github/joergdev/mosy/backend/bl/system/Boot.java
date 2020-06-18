@@ -78,6 +78,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
 
         entityMgr.persist(dbInterfaceType);
       }
+
+      entityMgr.flush();
     }
   }
 

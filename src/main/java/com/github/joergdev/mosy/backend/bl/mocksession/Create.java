@@ -22,6 +22,7 @@ public class Create extends AbstractBL<Void, CreateResponse>
     dbMockSession.setCreated(LocalDateTime.now());
 
     entityMgr.persist(dbMockSession);
+    entityMgr.flush();
   }
 
   @Override
