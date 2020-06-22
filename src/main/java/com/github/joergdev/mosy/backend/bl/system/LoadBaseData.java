@@ -33,6 +33,17 @@ public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
     baseDataGlobalConf = invokeSubBL(new Load(), null, new LoadBaseDataResponse()).getBaseData();
 
     // Interfaces
+    loadInterfaces();
+
+    // count mock session
+    countMockSessions = getDao(MockSessionDao.class).getCount();
+
+    // count records
+    countRecords = getDao(RecordDAO.class).getCount();
+  }
+
+  private void loadInterfaces()
+  {
     for (com.github.joergdev.mosy.backend.persistence.model.Interface dbInterface : getDao(InterfaceDao.class)
         .getAll())
     {
@@ -55,12 +66,6 @@ public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
       apiInterface.setRecord(dbInterface.getRecordConfig() != null
                              && Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
     }
-
-    // count mock session
-    countMockSessions = getDao(MockSessionDao.class).getCount();
-
-    // count records
-    countRecords = getDao(RecordDAO.class).getCount();
   }
 
   @Override

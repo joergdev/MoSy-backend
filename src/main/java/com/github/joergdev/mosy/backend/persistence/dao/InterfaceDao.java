@@ -14,7 +14,7 @@ public class InterfaceDao extends AbstractDAO
   public List<Interface> getAll()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" select * from interface ");
+    sql.append(" select * from INTERFACE order by INTERFACE_TYPE_ID, NAME ");
 
     Query q = entityMgr.createNativeQuery(sql.toString(), Interface.class);
 
