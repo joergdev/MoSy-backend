@@ -108,22 +108,9 @@ public class APIUtils
     if (ex instanceof BLException)
     {
       ResponseMessage rspm = ((BLException) ex).getResponseMessage();
-      if (rspm != null && rspm.getResponseCode() != null)
+      if (rspm != null && !ResponseCode.UNEXPECTED_ERROR.equals(rspm.getResponseCode()))
       {
-        ResponseCode rsCode = rspm.getResponseCode();
-
-        if (ResponseCode.ACCESS_DENIED.equals(rsCode))
-        {
-          status = Status.UNAUTHORIZED;
-        }
-        else if (ResponseCode.INVALID_INPUT_PARAMS.equals(rsCode))
-        {
-          status = Status.BAD_REQUEST;
-        }
-        else if (ResponseCode.DATA_DOESNT_EXIST.equals(rsCode))
-        {
-          status = Status.NOT_FOUND;
-        }
+        status = Status.OK;
       }
     }
 

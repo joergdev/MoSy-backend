@@ -128,7 +128,7 @@ public class MockServices
 
   @Path("custom-request")
   @POST
-  public CustomRequestResponse customRequest(CustomRequestRequest request)
+  public Response customRequest(CustomRequestRequest request)
   {
     CaptureCommonRequest commonReq = new CaptureCommonRequest();
     commonReq.setServicePathInterface(request.getInterfaceName());
@@ -147,7 +147,7 @@ public class MockServices
     customResponse.setStateOK(commonResp.isStateOK());
     customResponse.getMessages().addAll(commonResp.getMessages());
 
-    return customResponse;
+    return Response.status(Status.OK).entity(customResponse).build();
   }
 
   private Response getResponseByCaptureResponse(AbstractResponse blResponse, Supplier<String> getterResponse)
