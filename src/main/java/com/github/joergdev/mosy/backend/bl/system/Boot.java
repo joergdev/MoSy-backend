@@ -88,9 +88,6 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     if (getDao(GlobalConfigDAO.class).get() == null)
     {
       BaseData apiBaseData = new BaseData();
-      apiBaseData.setRoutingOnNoMockData(true);
-      apiBaseData.setMockActiveOnStartup(true);
-      apiBaseData.setRecord(false);
       apiBaseData.setTtlMockSession(86400);
 
       invokeSubBL(new Save(), apiBaseData, new EmptyResponse());

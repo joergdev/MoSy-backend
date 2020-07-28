@@ -43,18 +43,30 @@ public class Save extends AbstractBL<BaseData, EmptyResponse>
 
   private void saveRecordConfig()
   {
-    com.github.joergdev.mosy.api.model.RecordConfig apiRecordConfig = new com.github.joergdev.mosy.api.model.RecordConfig();
-
     RecordConfig dbRecordConfig = getDao(RecordConfigDAO.class).getGlobal();
-    if (dbRecordConfig != null)
+
+    if (request.getRecord() == null)
     {
-      apiRecordConfig.setRecordConfigId(dbRecordConfig.getRecordConfigId());
+      if (dbRecordConfig != null)
+      {
+        invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Delete(),
+            dbRecordConfig.getRecordConfigId(), new EmptyResponse());
+      }
     }
+    else
+    {
+      com.github.joergdev.mosy.api.model.RecordConfig apiRecordConfig = new com.github.joergdev.mosy.api.model.RecordConfig();
 
-    apiRecordConfig.setEnabled(request.getRecord());
+      if (dbRecordConfig != null)
+      {
+        apiRecordConfig.setRecordConfigId(dbRecordConfig.getRecordConfigId());
+      }
 
-    invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig,
-        new SaveResponse());
+      apiRecordConfig.setEnabled(request.getRecord());
+
+      invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig,
+          new SaveResponse());
+    }
   }
 
   @Override

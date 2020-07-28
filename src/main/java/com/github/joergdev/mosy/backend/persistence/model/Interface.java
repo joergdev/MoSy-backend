@@ -37,16 +37,16 @@ public class Interface
   @Column(name = "SERVICE_PATH", length = LENGTH_SERVICE_PATH)
   private String servicePath;
 
-  @Column(name = "MOCK_DISABLED_ON_STARTUP", length = 1, nullable = false, columnDefinition = "INT(1)")
-  private Boolean mockDisabledOnStartup;
+  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INT(1)")
+  private Boolean mockActiveOnStartup;
 
-  @Column(name = "MOCK_DISABLED", length = 1, nullable = false, columnDefinition = "INT(1)")
-  private Boolean mockDisabled;
+  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INT(1)")
+  private Boolean mockActive;
 
   @Column(name = "ROUTING_URL", length = LENGTH_ROUTING_URL)
   private String routingUrl;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1)")
   private Boolean routingOnNoMockData;
 
   @OneToMany(mappedBy = "mockInterface", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
@@ -83,26 +83,6 @@ public class Interface
   public void setType(InterfaceType type)
   {
     this.type = type;
-  }
-
-  public Boolean getMockDisabledOnStartup()
-  {
-    return mockDisabledOnStartup;
-  }
-
-  public void setMockDisabledOnStartup(Boolean mockDisabledOnStartup)
-  {
-    this.mockDisabledOnStartup = mockDisabledOnStartup;
-  }
-
-  public Boolean getMockDisabled()
-  {
-    return mockDisabled;
-  }
-
-  public void setMockDisabled(Boolean mockDisabled)
-  {
-    this.mockDisabled = mockDisabled;
   }
 
   public String getRoutingUrl()
@@ -153,5 +133,25 @@ public class Interface
   public void setServicePath(String servicePath)
   {
     this.servicePath = servicePath;
+  }
+
+  public Boolean getMockActiveOnStartup()
+  {
+    return mockActiveOnStartup;
+  }
+
+  public void setMockActiveOnStartup(Boolean mockActiveOnStartup)
+  {
+    this.mockActiveOnStartup = mockActiveOnStartup;
+  }
+
+  public Boolean getMockActive()
+  {
+    return mockActive;
+  }
+
+  public void setMockActive(Boolean mockActive)
+  {
+    this.mockActive = mockActive;
   }
 }

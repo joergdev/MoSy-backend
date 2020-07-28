@@ -27,14 +27,14 @@ public class InterfaceMethodDAO extends AbstractDAO
   public void setValuesOnStartup()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" update interface_method set MOCK_DISABLED = MOCK_DISABLED_ON_STARTUP, COUNT_CALLS = 0");
+    sql.append(" update interface_method set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP, COUNT_CALLS = 0");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
 
     executeUpdate(q);
   }
 
-  public boolean isRecordEnabled(Integer id)
+  public Boolean isRecordEnabled(Integer id)
   {
     Objects.requireNonNull(id, "id");
 
@@ -50,8 +50,9 @@ public class InterfaceMethodDAO extends AbstractDAO
     @SuppressWarnings("unchecked")
     List<Integer> resultList = q.getResultList();
 
-    return !Utils.isCollectionEmpty(resultList)
-           && Integer.valueOf(1).equals(Utils.getFirstElementOfCollection(resultList));
+    return Utils.isCollectionEmpty(resultList)
+        ? null
+        : Integer.valueOf(1).equals(Utils.getFirstElementOfCollection(resultList));
   }
 
   public InterfaceMethod getByServicePath(Integer interfaceId, String servicePath)

@@ -46,8 +46,9 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     transferMethods(dbInterface);
 
     // Record Y/N
-    apiInterface.setRecord(dbInterface.getRecordConfig() != null
-                           && Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
+    apiInterface.setRecord(dbInterface.getRecordConfig() == null
+        ? null
+        : Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
   }
 
   private void transferMethods(Interface dbInterface)

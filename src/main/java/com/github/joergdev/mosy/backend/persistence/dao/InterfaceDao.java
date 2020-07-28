@@ -24,7 +24,7 @@ public class InterfaceDao extends AbstractDAO
   public void setValuesOnStartup()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" update interface set MOCK_DISABLED = MOCK_DISABLED_ON_STARTUP ");
+    sql.append(" update interface set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
 

@@ -132,9 +132,25 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
   private boolean routingOnNoMockData(Interface dbInterface, InterfaceMethod dbMethod, BaseData baseData)
   {
-    return Boolean.TRUE.equals(baseData.getRoutingOnNoMockData())
-           && Boolean.TRUE.equals(dbInterface.getRoutingOnNoMockData())
-           && Boolean.TRUE.equals(dbMethod.getRoutingOnNoMockData());
+    if (Boolean.TRUE.equals(baseData.getRoutingOnNoMockData()))
+    {
+      return true;
+    }
+    else if (Boolean.FALSE.equals(baseData.getRoutingOnNoMockData()))
+    {
+      return false;
+    }
+
+    if (Boolean.TRUE.equals(dbInterface.getRoutingOnNoMockData()))
+    {
+      return true;
+    }
+    else if (Boolean.FALSE.equals(dbInterface.getRoutingOnNoMockData()))
+    {
+      return false;
+    }
+
+    return dbMethod != null && Boolean.TRUE.equals(dbMethod.getRoutingOnNoMockData());
   }
 
   private MockData getMockDataForRequest(InterfaceMethod dbMethod, InterfaceType interfaceType)
@@ -193,9 +209,25 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
   private boolean mockEnabled(Interface dbInterface, InterfaceMethod dbMethod, BaseData baseData)
   {
-    return Boolean.TRUE.equals(baseData.getMockActive())
-           && !Boolean.TRUE.equals(dbInterface.getMockDisabled()) && dbMethod != null
-           && !Boolean.TRUE.equals(dbMethod.getMockDisabled());
+    if (Boolean.TRUE.equals(baseData.getMockActive()))
+    {
+      return true;
+    }
+    else if (Boolean.FALSE.equals(baseData.getMockActive()))
+    {
+      return false;
+    }
+
+    if (Boolean.TRUE.equals(dbInterface.getMockActive()))
+    {
+      return true;
+    }
+    else if (Boolean.FALSE.equals(dbInterface.getMockActive()))
+    {
+      return false;
+    }
+
+    return dbMethod != null && Boolean.TRUE.equals(dbMethod.getMockActive());
   }
 
   private void checkMockSession()
@@ -258,24 +290,46 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       return false;
     }
 
+    // Global config yes/no
     if (Boolean.TRUE.equals(baseData.getRecord()))
     {
       return true;
     }
-
-    RecordConfig rcInterface = dbInterface.getRecordConfig();
-    if (rcInterface != null && Boolean.TRUE.equals(rcInterface.getEnabled()))
+    else if (Boolean.FALSE.equals(baseData.getRecord()))
     {
-      return true;
+      return false;
     }
 
+    // Interface global config yes/no
+    RecordConfig rcInterface = dbInterface.getRecordConfig();
+    if (rcInterface != null)
+    {
+      if (Boolean.TRUE.equals(rcInterface.getEnabled()))
+      {
+        return true;
+      }
+      else if (Boolean.FALSE.equals(rcInterface.getEnabled()))
+      {
+        return false;
+      }
+    }
+
+    // Method global config yes/no
     RecordConfig rcMethod = getDao(RecordConfigDAO.class)
         .getByInterfaceMethodId(dbMethod.getInterfaceMethodId());
-    if (rcMethod != null && Boolean.TRUE.equals(rcMethod.getEnabled()))
+    if (rcMethod != null)
     {
-      return true;
+      if (Boolean.TRUE.equals(rcMethod.getEnabled()))
+      {
+        return true;
+      }
+      else if (Boolean.FALSE.equals(rcMethod.getEnabled()))
+      {
+        return false;
+      }
     }
 
+    // Record by RecordConfig
     for (RecordConfig rc : dbMethod.getRecordConfig())
     {
       if (Boolean.TRUE.equals(rc.getEnabled())

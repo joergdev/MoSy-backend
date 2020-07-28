@@ -28,14 +28,14 @@ public class InterfaceMethod
   @Column(name = "SERVICE_PATH", length = Interface.LENGTH_SERVICE_PATH)
   private String servicePath;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
   private Boolean routingOnNoMockData;
 
-  @Column(name = "MOCK_DISABLED_ON_STARTUP", length = 1, nullable = false, columnDefinition = "INT(1)")
-  private Boolean mockDisabledOnStartup;
+  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
+  private Boolean mockActiveOnStartup;
 
-  @Column(name = "MOCK_DISABLED", length = 1, nullable = false, columnDefinition = "INT(1)")
-  private Boolean mockDisabled;
+  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
+  private Boolean mockActive;
 
   @Column(name = "COUNT_CALLS", nullable = false)
   private Integer countCalls;
@@ -81,26 +81,6 @@ public class InterfaceMethod
   public void setRoutingOnNoMockData(Boolean routingOnNoMockData)
   {
     this.routingOnNoMockData = routingOnNoMockData;
-  }
-
-  public Boolean getMockDisabledOnStartup()
-  {
-    return mockDisabledOnStartup;
-  }
-
-  public void setMockDisabledOnStartup(Boolean mockDisabledOnStartup)
-  {
-    this.mockDisabledOnStartup = mockDisabledOnStartup;
-  }
-
-  public Boolean getMockDisabled()
-  {
-    return mockDisabled;
-  }
-
-  public void setMockDisabled(Boolean mockDisabled)
-  {
-    this.mockDisabled = mockDisabled;
   }
 
   public Integer getCountCalls()
@@ -161,5 +141,25 @@ public class InterfaceMethod
   public void setRecords(List<Record> records)
   {
     this.records = records;
+  }
+
+  public Boolean getMockActiveOnStartup()
+  {
+    return mockActiveOnStartup;
+  }
+
+  public void setMockActiveOnStartup(Boolean mockActiveOnStartup)
+  {
+    this.mockActiveOnStartup = mockActiveOnStartup;
+  }
+
+  public Boolean getMockActive()
+  {
+    return mockActive;
+  }
+
+  public void setMockActive(Boolean mockActive)
+  {
+    this.mockActive = mockActive;
   }
 }

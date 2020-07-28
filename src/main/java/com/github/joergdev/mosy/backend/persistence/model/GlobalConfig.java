@@ -20,7 +20,7 @@ public class GlobalConfig
   @Column(name = "MOCK_ACTIVE", columnDefinition = "INT(1)")
   private Boolean mockActive;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1)")
   private Boolean routingOnNoMockData;
 
   @Column(name = "TTL_MOCK_SESSION")

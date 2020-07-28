@@ -5,6 +5,7 @@ import java.util.Map;
 import com.github.joergdev.mosy.api.model.Interface;
 import com.github.joergdev.mosy.api.model.InterfaceMethod;
 import com.github.joergdev.mosy.api.model.InterfaceType;
+import com.github.joergdev.mosy.api.response.EmptyResponse;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response._interface.SaveResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -270,21 +271,31 @@ public class Save extends AbstractBL<Interface, SaveResponse>
                                 Interface mockInterface, InterfaceMethod interfaceMethod,
                                 Boolean apiRecordEnabled)
   {
-    boolean recordEnabled = Boolean.TRUE.equals(apiRecordEnabled);
-    boolean dbRecordEnabled = Boolean.TRUE.equals(apiRecordConfig.getEnabled());
-
-    if (recordEnabled == dbRecordEnabled && apiRecordConfig.getRecordConfigId() != null)
+    if (apiRecordEnabled == null)
     {
-      return;
+      if (apiRecordConfig.getRecordConfigId() != null)
+      {
+        invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Delete(),
+            apiRecordConfig.getRecordConfigId(), new EmptyResponse());
+      }
+    }
+    else
+    {
+      if (Utils.isEqual(apiRecordEnabled, apiRecordConfig.getEnabled())
+          && apiRecordConfig.getRecordConfigId() != null)
+      {
+        return;
+      }
+
+      apiRecordConfig.setEnabled(apiRecordEnabled);
+
+      apiRecordConfig.setMockInterface(mockInterface);
+      apiRecordConfig.setInterfaceMethod(interfaceMethod);
+
+      invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig,
+          new com.github.joergdev.mosy.api.response.recordconfig.SaveResponse());
     }
 
-    apiRecordConfig.setEnabled(recordEnabled);
-
-    apiRecordConfig.setMockInterface(mockInterface);
-    apiRecordConfig.setInterfaceMethod(interfaceMethod);
-
-    invokeSubBL(new com.github.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig,
-        new com.github.joergdev.mosy.api.response.recordconfig.SaveResponse());
   }
 
   @Override

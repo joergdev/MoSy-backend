@@ -15,8 +15,8 @@ import javax.persistence.Table;
 public class MockData
 {
   public static final int LENGTH_TITLE = 200;
-  public static final int LENGTH_REQUEST = 10000;
-  public static final int LENGTH_RESPONSE = 50000;
+  public static final int LENGTH_REQUEST = 500000;
+  public static final int LENGTH_RESPONSE = 500000;
 
   @Column(name = "MOCK_DATA_ID")
   @Id

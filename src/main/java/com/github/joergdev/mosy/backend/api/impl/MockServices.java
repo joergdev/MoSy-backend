@@ -128,12 +128,13 @@ public class MockServices
 
   @Path("custom-request")
   @POST
-  public Response customRequest(CustomRequestRequest request)
+  public Response customRequest(@Context HttpHeaders headers, CustomRequestRequest request)
   {
     CaptureCommonRequest commonReq = new CaptureCommonRequest();
     commonReq.setServicePathInterface(request.getInterfaceName());
     commonReq.setServicePathMethod(request.getInterfaceMethod());
     commonReq.setContent(request.getRequest());
+    commonReq.setHttpHeaders(headers);
 
     CaptureCommonResponse commonResp = new CaptureCommonResponse();
 

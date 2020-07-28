@@ -63,8 +63,10 @@ public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
       }
 
       // Record Y/N
-      apiInterface.setRecord(dbInterface.getRecordConfig() != null
-                             && Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
+      apiInterface.setRecord(
+          dbInterface.getRecordConfig() == null || dbInterface.getRecordConfig().getEnabled() == null
+              ? null
+              : Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
     }
   }
 
