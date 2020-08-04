@@ -5,6 +5,7 @@ import com.github.joergdev.mosy.api.model.Record;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.record.SaveResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
+import com.github.joergdev.mosy.backend.bl.utils.BlUtils;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceType;
 import com.github.joergdev.mosy.backend.persistence.model.MockData;
@@ -54,6 +55,9 @@ public class Save extends AbstractBL<Record, SaveResponse>
 
     // if not intern -> only custom allowed
     checkInterfaceType(dbMethod);
+
+    // format request/response
+    request.formatRequestResponse(BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbMethod));
 
     // transfer values
     ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created");

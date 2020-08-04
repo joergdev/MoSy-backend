@@ -6,6 +6,7 @@ import com.github.joergdev.mosy.api.model.MockData;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.mockdata.SaveResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
+import com.github.joergdev.mosy.backend.bl.utils.BlUtils;
 import com.github.joergdev.mosy.backend.bl.utils.PersistenceUtil;
 import com.github.joergdev.mosy.backend.persistence.dao.MockDataDAO;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
@@ -80,6 +81,9 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     // check title unique
     checkUniqueData();
+
+    // format request/response
+    request.formatRequestResponse(BlUtils.getInterfaceTypeId(apiInterfaceMethodRequest, dbMethod));
 
     // transfer values
     ObjectUtils.copyValues(request, dbMockData, "interfaceMethod", "mockSession", "created", "countCalls");

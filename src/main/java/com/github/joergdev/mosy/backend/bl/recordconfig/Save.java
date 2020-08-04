@@ -4,6 +4,7 @@ import com.github.joergdev.mosy.api.model.RecordConfig;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.recordconfig.SaveResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
+import com.github.joergdev.mosy.backend.bl.utils.BlUtils;
 import com.github.joergdev.mosy.backend.persistence.dao.RecordConfigDAO;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
@@ -84,8 +85,6 @@ public class Save extends AbstractBL<RecordConfig, SaveResponse>
 
   private void transferValues(com.github.joergdev.mosy.backend.persistence.model.RecordConfig dbRecordConfig)
   {
-    ObjectUtils.copyValues(request, dbRecordConfig, "mockInterface", "interfaceMethod");
-
     // Interface
     if (request.getMockInterface() != null)
     {
@@ -125,6 +124,12 @@ public class Save extends AbstractBL<RecordConfig, SaveResponse>
     {
       dbRecordConfig.setInterfaceMethod(null);
     }
+
+    // format request
+    request.formatRequest(
+        BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbRecordConfig.getInterfaceMethod()));
+
+    ObjectUtils.copyValues(request, dbRecordConfig, "mockInterface", "interfaceMethod");
   }
 
   private void checkUniqueData(com.github.joergdev.mosy.backend.persistence.model.RecordConfig dbRecordConfig)
