@@ -105,7 +105,7 @@ public class Save extends AbstractBL<Interface, SaveResponse>
 
   private void apiInterface2dbInterface(com.github.joergdev.mosy.backend.persistence.model.Interface dbInterface)
   {
-    ObjectUtils.copyValues(request, dbInterface, "type");
+    ObjectUtils.copyValues(request, dbInterface, "type", "methods");
 
     if (request.getType() != null)
     {
@@ -197,7 +197,7 @@ public class Save extends AbstractBL<Interface, SaveResponse>
         checkUniqueDataInterfaceMethod(apiMethod);
 
         // base data
-        ObjectUtils.copyValues(apiMethod, dbMethod, "mockInterface");
+        ObjectUtils.copyValues(apiMethod, dbMethod, "mockInterface", "mockData", "recordConfigs");
 
         // save
         entityMgr.persist(dbMethod);
