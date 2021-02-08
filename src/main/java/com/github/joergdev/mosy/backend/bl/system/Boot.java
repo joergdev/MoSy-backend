@@ -11,7 +11,8 @@ import com.github.joergdev.mosy.backend.persistence.dao.InterfaceDao;
 import com.github.joergdev.mosy.backend.persistence.dao.InterfaceMethodDAO;
 import com.github.joergdev.mosy.backend.persistence.dao.InterfaceTypeDao;
 import com.github.joergdev.mosy.backend.persistence.dao.MockDataDAO;
-import com.github.joergdev.mosy.backend.persistence.dao.MockSessionDao;
+import com.github.joergdev.mosy.backend.persistence.dao.MockProfileDao;
+import com.github.joergdev.mosy.backend.persistence.dao.RecordSessionDao;
 
 public class Boot extends AbstractBL<Void, EmptyResponse>
 {
@@ -34,7 +35,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     getDao(InterfaceMethodDAO.class).setValuesOnStartup();
     getDao(MockDataDAO.class).setValuesOnStartup();
 
-    getDao(MockSessionDao.class).clearAll();
+    getDao(RecordSessionDao.class).clearAll();
+    getDao(MockProfileDao.class).clearAllNonPersistent();
   }
 
   /**
@@ -44,7 +46,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
   {
     GlobalConfigDAO dao = getDao(GlobalConfigDAO.class);
 
-    alterConstraintIfNecessary(dao, "MOCK_DATA", "MOCK_SESSION_ID");
+    alterConstraintIfNecessary(dao, "MOCK_DATA_MOCK_PROFILE", "MOCK_DATA_ID");
+    alterConstraintIfNecessary(dao, "MOCK_DATA_MOCK_PROFILE", "MOCK_PROFILE_ID");
 
     alterConstraintIfNecessary(dao, "INTERFACE_METHOD", "INTERFACE_ID");
     alterConstraintIfNecessary(dao, "RECORD_CONFIG", "INTERFACE_ID");
@@ -52,6 +55,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     alterConstraintIfNecessary(dao, "MOCK_DATA", "INTERFACE_METHOD_ID");
     alterConstraintIfNecessary(dao, "RECORD", "INTERFACE_METHOD_ID");
     alterConstraintIfNecessary(dao, "RECORD_CONFIG", "INTERFACE_METHOD_ID");
+
+    alterConstraintIfNecessary(dao, "RECORD", "RECORD_SESSION_ID");
   }
 
   private void alterConstraintIfNecessary(GlobalConfigDAO dao, String tbl, String col)
@@ -88,7 +93,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     if (getDao(GlobalConfigDAO.class).get() == null)
     {
       BaseData apiBaseData = new BaseData();
-      apiBaseData.setTtlMockSession(86400);
+      apiBaseData.setTtlMockProfile(86400);
+      apiBaseData.setTtlRecordSession(86400);
 
       invokeSubBL(new Save(), apiBaseData, new EmptyResponse());
     }

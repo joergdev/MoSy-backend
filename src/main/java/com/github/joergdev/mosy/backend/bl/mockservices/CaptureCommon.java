@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.github.joergdev.mosy.api.model.BaseData;
 import com.github.joergdev.mosy.api.model.InterfaceType;
 import com.github.joergdev.mosy.api.model.Record;
+import com.github.joergdev.mosy.api.model.RecordSession;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.record.SaveResponse;
 import com.github.joergdev.mosy.api.response.system.LoadBaseDataResponse;
@@ -22,7 +23,7 @@ import com.github.joergdev.mosy.backend.persistence.dao.RecordConfigDAO;
 import com.github.joergdev.mosy.backend.persistence.model.Interface;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import com.github.joergdev.mosy.backend.persistence.model.MockData;
-import com.github.joergdev.mosy.backend.persistence.model.MockSession;
+import com.github.joergdev.mosy.backend.persistence.model.MockProfile;
 import com.github.joergdev.mosy.backend.persistence.model.RecordConfig;
 import com.github.joergdev.mosy.backend.util.MockServicesUtil;
 import com.github.joergdev.mosy.backend.util.SoapRouting;
@@ -65,7 +66,8 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(),
         dbInterface, false);
 
-    checkMockSession();
+    checkMockProfile();
+    checkRecordSession();
 
     BaseData baseData = invokeSubBL(new Load(), null, new LoadBaseDataResponse()).getBaseData();
 
@@ -158,13 +160,11 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     MockData dbMockDataFound = null;
     MockData dbMockDataMethodGlobal = null;
 
+    boolean useCommonMockdata = useCommonMockdata();
+
     for (MockData dbMockData : getMockDataSorted(dbMethod.getMockData()))
     {
-      if (!Boolean.TRUE.equals(dbMockData.getActive())
-          || (request.getMockSessionID() == null && dbMockData.getMockSession() != null)
-          || (request.getMockSessionID() != null
-              && (dbMockData.getMockSession() != null
-                  && !dbMockData.getMockSession().getMockSessionID().equals(request.getMockSessionID()))))
+      if (!isMockDataRelevant(dbMockData, useCommonMockdata))
       {
         continue;
       }
@@ -191,20 +191,73 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     return dbMockDataFound;
   }
 
+  private boolean isMockDataRelevant(MockData dbMockData, boolean useCommonMockdata)
+  {
+    if (!Boolean.TRUE.equals(dbMockData.getActive()))
+    {
+      return false;
+    }
+
+    boolean commonDbMockData = Boolean.TRUE.equals(dbMockData.getCommon())
+                               || dbMockData.getMockProfiles().isEmpty();
+
+    Integer mockProfileIDReq = request.getMockProfileID();
+    if (mockProfileIDReq == null)
+    {
+      if (!commonDbMockData)
+      {
+        return false;
+      }
+    }
+    else
+    {
+      if (!dbMockData.getMockProfiles().stream()
+          .anyMatch(mp -> mockProfileIDReq.equals(mp.getMockProfile().getMockProfileID())))
+      {
+        if (commonDbMockData)
+        {
+          if (!useCommonMockdata)
+          {
+            return false;
+          }
+        }
+        else
+        {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  private boolean useCommonMockdata()
+  {
+    if (request.getMockProfileID() != null)
+    {
+      MockProfile dbMockProfile = entityMgr.find(MockProfile.class, request.getMockProfileID());
+      leaveOn(dbMockProfile == null, ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockprofile"));
+
+      return Boolean.TRUE.equals(dbMockProfile.getUseCommonMocks());
+    }
+
+    return true;
+  }
+
   private List<MockData> getMockDataSorted(List<MockData> mockData)
   {
-    // first with mockSession then without
+    // first with mockProfile then without
 
     return mockData.stream()
-        .sorted((md1, md2) -> getMockSessionIdForSort(md1).compareTo(getMockSessionIdForSort(md2)))
+        .sorted((md1, md2) -> getMockProfileFlagForSort(md1).compareTo(getMockProfileFlagForSort(md2)))
         .collect(Collectors.toList());
   }
 
-  private Integer getMockSessionIdForSort(MockData md)
+  private Integer getMockProfileFlagForSort(MockData md)
   {
-    return md.getMockSession() != null
-        ? md.getMockSession().getMockSessionID()
-        : Integer.MAX_VALUE;
+    return !md.getMockProfiles().isEmpty()
+        ? 0
+        : 1;
   }
 
   private boolean mockEnabled(Interface dbInterface, InterfaceMethod dbMethod, BaseData baseData)
@@ -230,12 +283,21 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     return dbMethod != null && Boolean.TRUE.equals(dbMethod.getMockActive());
   }
 
-  private void checkMockSession()
+  private void checkMockProfile()
   {
-    leaveOn(request.getMockSessionID() != null
-            && entityMgr.find(MockSession.class, request.getMockSessionID()) == null,
+    leaveOn(request.getMockProfileID() != null
+            && entityMgr.find(MockProfile.class, request.getMockProfileID()) == null,
         ResponseCode.DATA_DOESNT_EXIST
-            .withAddtitionalInfo("mocksession with id " + request.getMockSessionID()));
+            .withAddtitionalInfo("mockProfile with id " + request.getMockProfileID()));
+  }
+
+  private void checkRecordSession()
+  {
+    leaveOn(request.getRecordSessionID() != null
+            && entityMgr.find(com.github.joergdev.mosy.backend.persistence.model.RecordSession.class,
+                request.getRecordSessionID()) == null,
+        ResponseCode.DATA_DOESNT_EXIST
+            .withAddtitionalInfo("recordSession with id " + request.getRecordSessionID()));
   }
 
   private void doRouting(String requestContent, Interface dbInterface, BaseData baseData,
@@ -278,6 +340,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     apiRecord.setResponse(mockResponse);
     apiRecord.setCreatedAsLdt(LocalDateTime.now());
 
+    Integer recordSessionID = request.getRecordSessionID();
+    if (recordSessionID != null)
+    {
+      apiRecord.setRecordSession(new RecordSession(recordSessionID));
+    }
+
     invokeSubBL(new Save(), apiRecord, new SaveResponse());
   }
 
@@ -288,6 +356,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     if (dbMethod == null)
     {
       return false;
+    }
+
+    // If recordSession set => Allways record
+    if (request.getRecordSessionID() != null)
+    {
+      return true;
     }
 
     // Global config yes/no

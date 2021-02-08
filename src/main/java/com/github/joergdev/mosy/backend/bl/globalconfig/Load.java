@@ -26,7 +26,8 @@ public class Load extends AbstractBL<Void, LoadBaseDataResponse>
     baseData.setRoutingOnNoMockData(dbGlobalConf.getRoutingOnNoMockData());
     baseData.setMockActive(dbGlobalConf.getMockActive());
     baseData.setMockActiveOnStartup(dbGlobalConf.getMockActiveOnStartup());
-    baseData.setTtlMockSession(dbGlobalConf.getTtlMockSession());
+    baseData.setTtlMockProfile(dbGlobalConf.getTtlMockProfile());
+    baseData.setTtlRecordSession(dbGlobalConf.getTtlRecordSession());
 
     RecordConfig dbRecordConfig = getDao(RecordConfigDAO.class).getGlobal();
     if (dbRecordConfig != null)

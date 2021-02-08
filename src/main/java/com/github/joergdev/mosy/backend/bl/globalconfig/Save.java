@@ -33,7 +33,8 @@ public class Save extends AbstractBL<BaseData, EmptyResponse>
     dbGlobalConfig.setRoutingOnNoMockData(request.getRoutingOnNoMockData());
     dbGlobalConfig.setMockActive(request.getMockActive());
     dbGlobalConfig.setMockActiveOnStartup(request.getMockActiveOnStartup());
-    dbGlobalConfig.setTtlMockSession(request.getTtlMockSession());
+    dbGlobalConfig.setTtlMockProfile(request.getTtlMockProfile());
+    dbGlobalConfig.setTtlRecordSession(request.getTtlRecordSession());
 
     entityMgr.persist(dbGlobalConfig);
     entityMgr.flush();

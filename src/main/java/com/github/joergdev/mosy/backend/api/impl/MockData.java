@@ -8,6 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import com.github.joergdev.mosy.api.APIConstants;
 import com.github.joergdev.mosy.api.response.EmptyResponse;
 import com.github.joergdev.mosy.api.response.mockdata.LoadResponse;
 import com.github.joergdev.mosy.api.response.mockdata.SaveResponse;
@@ -16,7 +17,7 @@ import com.github.joergdev.mosy.backend.bl.mockdata.Delete;
 import com.github.joergdev.mosy.backend.bl.mockdata.Load;
 import com.github.joergdev.mosy.backend.bl.mockdata.Save;
 
-@Path("mosy/api/v_1_0/mockdata")
+@Path(APIConstants.API_URL_BASE + "mockdata")
 public class MockData
 {
   @Path(value = "{id}")

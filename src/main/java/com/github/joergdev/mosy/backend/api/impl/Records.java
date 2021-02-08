@@ -9,6 +9,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import com.github.joergdev.mosy.api.APIConstants;
 import com.github.joergdev.mosy.api.response.EmptyResponse;
 import com.github.joergdev.mosy.api.response.record.LoadAllResponse;
 import com.github.joergdev.mosy.api.response.record.LoadResponse;
@@ -20,17 +21,19 @@ import com.github.joergdev.mosy.backend.bl.record.Load;
 import com.github.joergdev.mosy.backend.bl.record.LoadAll;
 import com.github.joergdev.mosy.backend.bl.record.Save;
 
-@Path("mosy/api/v_1_0/records")
+@Path(APIConstants.API_URL_BASE + "records")
 public class Records
 {
   @GET
   public Response loadAll(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
                           @QueryParam("load_count") Integer loadCount,
-                          @QueryParam("last_loaded_id") Integer lastLoadedId)
+                          @QueryParam("last_loaded_id") Integer lastLoadedId,
+                          @QueryParam("record_session_id") Integer recordSessionID)
   {
     LoadAllRequest request = new LoadAllRequest();
     request.setLoadCount(loadCount);
     request.setLastLoadedId(lastLoadedId);
+    request.setRecordSessionID(recordSessionID);
 
     return APIUtils.executeBL(request, new LoadAllResponse(), new LoadAll(), token);
   }

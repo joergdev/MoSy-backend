@@ -8,6 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import com.github.joergdev.mosy.api.APIConstants;
 import com.github.joergdev.mosy.api.response.EmptyResponse;
 import com.github.joergdev.mosy.api.response.recordconfig.LoadResponse;
 import com.github.joergdev.mosy.api.response.recordconfig.SaveResponse;
@@ -16,7 +17,7 @@ import com.github.joergdev.mosy.backend.bl.recordconfig.Delete;
 import com.github.joergdev.mosy.backend.bl.recordconfig.Load;
 import com.github.joergdev.mosy.backend.bl.recordconfig.Save;
 
-@Path("mosy/api/v_1_0/record-config")
+@Path(APIConstants.API_URL_BASE + "record-config")
 public class RecordConfig
 {
   @Path(value = "{id}")

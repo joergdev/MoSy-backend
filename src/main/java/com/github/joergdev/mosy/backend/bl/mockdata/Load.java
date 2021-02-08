@@ -1,10 +1,11 @@
 package com.github.joergdev.mosy.backend.bl.mockdata;
 
 import com.github.joergdev.mosy.api.model.InterfaceMethod;
-import com.github.joergdev.mosy.api.model.MockSession;
+import com.github.joergdev.mosy.api.model.MockProfile;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
 import com.github.joergdev.mosy.backend.persistence.model.MockData;
+import com.github.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -24,7 +25,7 @@ public class Load extends AbstractBL<Integer, com.github.joergdev.mosy.api.respo
   {
     MockData dbMockData = findDbEntity(MockData.class, request, "mockData with id " + request);
 
-    ObjectUtils.copyValues(dbMockData, apiMockData, "created", "interfaceMethod", "mockSession");
+    ObjectUtils.copyValues(dbMockData, apiMockData, "created", "interfaceMethod", "mockProfiles");
     apiMockData.setCreatedAsLdt(dbMockData.getCreated());
 
     if (dbMockData.getInterfaceMethod() != null)
@@ -35,13 +36,16 @@ public class Load extends AbstractBL<Integer, com.github.joergdev.mosy.api.respo
       apiMockData.setInterfaceMethod(apiMethod);
     }
 
-    if (dbMockData.getMockSession() != null)
+    for (MockDataMockProfile dbMockDataMockProfiles : dbMockData.getMockProfiles())
     {
-      MockSession apiMockSession = new MockSession();
-      apiMockSession.setMockSessionID(dbMockData.getMockSession().getMockSessionID());
-      apiMockSession.setCreatedAsLdt(dbMockData.getMockSession().getCreated());
+      com.github.joergdev.mosy.backend.persistence.model.MockProfile dbMockProfile = dbMockDataMockProfiles
+          .getMockProfile();
+      MockProfile apiMockProfile = new MockProfile();
 
-      apiMockData.setMockSession(apiMockSession);
+      ObjectUtils.copyValues(dbMockProfile, apiMockProfile, "created");
+      apiMockProfile.setCreatedAsLdt(dbMockProfile.getCreated());
+
+      apiMockData.getMockProfiles().add(apiMockProfile);
     }
   }
 

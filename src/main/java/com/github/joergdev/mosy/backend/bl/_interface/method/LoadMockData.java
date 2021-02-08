@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import com.github.joergdev.mosy.api.model.Interface;
 import com.github.joergdev.mosy.api.model.MockData;
-import com.github.joergdev.mosy.api.model.MockSession;
+import com.github.joergdev.mosy.api.model.MockProfile;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response._interface.method.LoadMockDataResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
+import com.github.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -41,19 +42,31 @@ public class LoadMockData
     com.github.joergdev.mosy.api.model.InterfaceMethod apiMethod = new com.github.joergdev.mosy.api.model.InterfaceMethod();
     apiMethod.setInterfaceMethodId(request.getInterfaceMethodId());
 
+    transferMockProfiles(dbMethod, apiMethod);
+  }
+
+  private void transferMockProfiles(InterfaceMethod dbMethod,
+                                    com.github.joergdev.mosy.api.model.InterfaceMethod apiMethod)
+  {
     for (com.github.joergdev.mosy.backend.persistence.model.MockData dbMockData : dbMethod.getMockData())
     {
       MockData apiMockData = new MockData();
 
       ObjectUtils.copyValues(dbMockData, apiMockData, "request", "response", "created", "interfaceMethod",
-          "mockSession");
+          "mockProfiles");
       apiMockData.setCreatedAsLdt(dbMockData.getCreated());
       apiMockData.setInterfaceMethod(apiMethod);
 
-      if (dbMockData.getMockSession() != null)
+      for (MockDataMockProfile dbMockDataMockProfile : dbMockData.getMockProfiles())
       {
-        apiMockData.setMockSession(new MockSession());
-        apiMockData.getMockSession().setMockSessionID(dbMockData.getMockSession().getMockSessionID());
+        com.github.joergdev.mosy.backend.persistence.model.MockProfile dbMockProfile = dbMockDataMockProfile
+            .getMockProfile();
+        MockProfile apiMockProfile = new MockProfile();
+
+        ObjectUtils.copyValues(dbMockProfile, apiMockProfile, "created");
+        apiMockProfile.setCreatedAsLdt(dbMockProfile.getCreated());
+
+        apiMockData.getMockProfiles().add(apiMockProfile);
       }
 
       mockDataList.add(apiMockData);

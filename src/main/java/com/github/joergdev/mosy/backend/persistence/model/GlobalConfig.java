@@ -23,8 +23,11 @@ public class GlobalConfig
   @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1)")
   private Boolean routingOnNoMockData;
 
-  @Column(name = "TTL_MOCK_SESSION")
-  private Integer ttlMockSession;
+  @Column(name = "TTL_RECORD_SESSION")
+  private Integer ttlRecordSession;
+
+  @Column(name = "TTL_MOCK_PROFILE")
+  private Integer ttlMockProfile;
 
   public Boolean getMockActiveOnStartup()
   {
@@ -46,16 +49,6 @@ public class GlobalConfig
     this.mockActive = mockActive;
   }
 
-  public Integer getTtlMockSession()
-  {
-    return ttlMockSession;
-  }
-
-  public void setTtlMockSession(Integer ttlMockSession)
-  {
-    this.ttlMockSession = ttlMockSession;
-  }
-
   public LocalDateTime getCreated()
   {
     return created;
@@ -74,5 +67,37 @@ public class GlobalConfig
   public void setRoutingOnNoMockData(Boolean routingOnNoMockData)
   {
     this.routingOnNoMockData = routingOnNoMockData;
+  }
+
+  /**
+   * @return the ttlRecordSession
+   */
+  public Integer getTtlRecordSession()
+  {
+    return ttlRecordSession;
+  }
+
+  /**
+   * @param ttlRecordSession the ttlRecordSession to set
+   */
+  public void setTtlRecordSession(Integer ttlRecordSession)
+  {
+    this.ttlRecordSession = ttlRecordSession;
+  }
+
+  /**
+   * @return the ttlMockProfile
+   */
+  public Integer getTtlMockProfile()
+  {
+    return ttlMockProfile;
+  }
+
+  /**
+   * @param ttlMockProfile the ttlMockProfile to set
+   */
+  public void setTtlMockProfile(Integer ttlMockProfile)
+  {
+    this.ttlMockProfile = ttlMockProfile;
   }
 }

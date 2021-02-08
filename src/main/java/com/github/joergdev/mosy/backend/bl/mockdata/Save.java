@@ -1,6 +1,9 @@
 package com.github.joergdev.mosy.backend.bl.mockdata;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import org.xml.sax.SAXParseException;
 import com.github.joergdev.mosy.api.model.Interface;
 import com.github.joergdev.mosy.api.model.MockData;
 import com.github.joergdev.mosy.api.response.ResponseCode;
@@ -10,7 +13,8 @@ import com.github.joergdev.mosy.backend.bl.utils.BlUtils;
 import com.github.joergdev.mosy.backend.bl.utils.PersistenceUtil;
 import com.github.joergdev.mosy.backend.persistence.dao.MockDataDAO;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
-import com.github.joergdev.mosy.backend.persistence.model.MockSession;
+import com.github.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
+import com.github.joergdev.mosy.backend.persistence.model.MockProfile;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -55,8 +59,11 @@ public class Save extends AbstractBL<MockData, SaveResponse>
                 .length() > com.github.joergdev.mosy.backend.persistence.model.MockData.LENGTH_RESPONSE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response"));
 
-    leaveOn(request.getMockSession() != null && request.getMockSession().getMockSessionID() == null,
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mocksession"));
+    for (com.github.joergdev.mosy.api.model.MockProfile apiMockProfile : request.getMockProfiles())
+    {
+      leaveOn(apiMockProfile.getMockProfileID() == null,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockProfile"));
+    }
   }
 
   @Override
@@ -72,27 +79,120 @@ public class Save extends AbstractBL<MockData, SaveResponse>
                 .equals(dbMockData.getInterfaceMethod().getInterfaceMethodId()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockdata and interfaceMethod wrong"));
 
-    MockSession dbMockSession = null;
-    if (request.getMockSession() != null)
-    {
-      dbMockSession = findDbEntity(MockSession.class, request.getMockSession().getMockSessionID(),
-          "mocksession with id: " + request.getMockSession().getMockSessionID());
-    }
+    // get MockProfiles from db
+    Map<Integer, MockProfile> dbMockProfiles = getMockProfilesFromRequest();
+
+    // set common flag if no mock profile assigned and add info
+    setCommonIfNoMockProfile();
 
     // check title unique
     checkUniqueData();
 
     // format request/response
-    request.formatRequestResponse(BlUtils.getInterfaceTypeId(apiInterfaceMethodRequest, dbMethod));
+    formatRequestResponse(dbMethod);
+
+    // set hashes request/response
+    request.setRequestResponseHash();
 
     // transfer values
-    ObjectUtils.copyValues(request, dbMockData, "interfaceMethod", "mockSession", "created", "countCalls");
+    ObjectUtils.copyValues(request, dbMockData, "interfaceMethod", "mockProfile", "created", "countCalls",
+        "mockProfiles");
     dbMockData.setInterfaceMethod(dbMethod);
-    dbMockData.setMockSession(dbMockSession);
 
     // save
     entityMgr.persist(dbMockData);
     entityMgr.flush();
+
+    // save mockProfiles
+    saveMockProfiles(dbMockProfiles);
+  }
+
+  private void setCommonIfNoMockProfile()
+  {
+    if (request.getMockProfiles().isEmpty() && !Boolean.TRUE.equals(request.getCommon()))
+    {
+      request.setCommon(true);
+
+      addResponseMessage(ResponseCode.DATA_SET.withAddtitionalInfo("mockdata set to common"));
+    }
+  }
+
+  private void formatRequestResponse(InterfaceMethod dbMethod)
+  {
+    try
+    {
+      request.formatRequestResponse(BlUtils.getInterfaceTypeId(apiInterfaceMethodRequest, dbMethod));
+    }
+    catch (RuntimeException ex)
+    {
+      if (ex.getCause() instanceof SAXParseException)
+      {
+        leave(ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request / response xml format"));
+      }
+      else
+      {
+        throw ex;
+      }
+    }
+  }
+
+  private void saveMockProfiles(Map<Integer, MockProfile> dbMockProfiles)
+  {
+    boolean dbChanged = false;
+
+    // handle existing mockProfiles (remove from map to add or delete from db)
+    for (MockDataMockProfile dbMockDataMockProfile : Utils.nvlCollection(dbMockData.getMockProfiles()))
+    {
+      Integer dbMockProfileID = dbMockDataMockProfile.getMockProfile().getMockProfileID();
+
+      // MockProfile exists => remove from map to add
+      if (dbMockProfiles.containsKey(dbMockProfileID))
+      {
+        dbMockProfiles.remove(dbMockProfileID);
+      }
+      // MockProfile doestn exist (anymore) => delete
+      else
+      {
+        entityMgr.remove(
+            entityMgr.find(MockDataMockProfile.class, dbMockDataMockProfile.getMockDataMockProfileId()));
+
+        dbChanged = true;
+      }
+    }
+
+    // handle new mockProfiles (save)
+    for (Integer mockProfileID : dbMockProfiles.keySet())
+    {
+      MockDataMockProfile dbMockDataMockProfile = new MockDataMockProfile();
+      dbMockDataMockProfile.setMockData(dbMockData);
+      dbMockDataMockProfile.setMockProfile(dbMockProfiles.get(mockProfileID));
+
+      entityMgr.persist(dbMockDataMockProfile);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
+  private Map<Integer, MockProfile> getMockProfilesFromRequest()
+  {
+    Map<Integer, MockProfile> dbMockProfiles = new HashMap<>();
+
+    for (com.github.joergdev.mosy.api.model.MockProfile apiMockProfile : request.getMockProfiles())
+    {
+      Integer mockProfileID = apiMockProfile.getMockProfileID();
+
+      MockProfile dbMockProfile = findDbEntity(MockProfile.class, mockProfileID,
+          "mockProfile with id: " + mockProfileID);
+
+      dbMockProfiles.put(mockProfileID, dbMockProfile);
+    }
+
+    return dbMockProfiles;
   }
 
   private InterfaceMethod getDbMethod()
@@ -149,6 +249,7 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     apiMockDateResponse.setCreatedAsLdt(dbMockData.getCreated());
     apiMockDateResponse.setCountCalls(dbMockData.getCountCalls());
     apiMockDateResponse.setActive(dbMockData.getActive());
+    apiMockDateResponse.setCommon(dbMockData.getCommon());
 
     response.setMockData(apiMockDateResponse);
   }

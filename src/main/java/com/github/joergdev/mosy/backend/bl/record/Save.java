@@ -9,6 +9,7 @@ import com.github.joergdev.mosy.backend.bl.utils.BlUtils;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceType;
 import com.github.joergdev.mosy.backend.persistence.model.MockData;
+import com.github.joergdev.mosy.backend.persistence.model.RecordSession;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 import com.github.joergdev.mosy.shared.Utils;
 
@@ -31,6 +32,9 @@ public class Save extends AbstractBL<Record, SaveResponse>
 
     leaveOn(Utils.isEmpty(request.getResponse()) || request.getResponse().length() > MockData.LENGTH_RESPONSE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response data"));
+
+    leaveOn(request.getRecordSession() != null && request.getRecordSession().getRecordSessionID() == null,
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("recordSession"));
   }
 
   @Override
@@ -56,12 +60,21 @@ public class Save extends AbstractBL<Record, SaveResponse>
     // if not intern -> only custom allowed
     checkInterfaceType(dbMethod);
 
+    // RecordSession
+    RecordSession dbRecordSession = null;
+    if (request.getRecordSession() != null)
+    {
+      dbRecordSession = findDbEntity(RecordSession.class, request.getRecordSession().getRecordSessionID(),
+          "recordSession with id: " + request.getRecordSession().getRecordSessionID());
+    }
+
     // format request/response
     request.formatRequestResponse(BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbMethod));
 
     // transfer values
-    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created");
+    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created", "recordSession");
     dbRecord.setInterfaceMethod(dbMethod);
+    dbRecord.setRecordSession(dbRecordSession);
 
     // save
     entityMgr.persist(dbRecord);

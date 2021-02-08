@@ -57,4 +57,27 @@ public class MockDataDAO extends AbstractDAO
 
     return getSingleResult(q) != null;
   }
+
+  public int deleteMockDataDedicatedForMockProfile(Integer mockProfileID)
+  {
+    Objects.requireNonNull(mockProfileID, "mockProfileID");
+
+    StringBuilder sql = new StringBuilder();
+
+    sql.append(" delete from MOCK_DATA md ");
+    sql.append(" where md.COMMON = 0 ");
+    sql.append(" and not exists ( ");
+    sql.append("  select 1 from MOCK_DATA_MOCK_PROFILE mdmp ");
+    sql.append("  where mdmp.MOCK_DATA_ID = md.MOCK_DATA_ID ");
+    sql.append("  and mdmp.MOCK_PROFILE_ID != :mp_id ");
+    sql.append(" ) ");
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("mp_id", mockProfileID);
+
+    Query q = entityMgr.createNativeQuery(sql.toString());
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
+
+    return q.executeUpdate();
+  }
 }
