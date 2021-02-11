@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.joergdev.mosy.api.model.Interface;
 import com.github.joergdev.mosy.api.model.InterfaceMethod;
 import com.github.joergdev.mosy.api.model.Record;
+import com.github.joergdev.mosy.api.model.RecordSession;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.record.LoadAllResponse;
 import com.github.joergdev.mosy.backend.api.intern.request.record.LoadAllRequest;
@@ -33,6 +34,9 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
               && interfaceMethod.getMockInterface().getInterfaceId() != null
               && !Utils.isPositive(interfaceMethod.getMockInterface().getInterfaceId()),
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("interfaceId"));
+
+      leaveOn(request.getLoadCount() != null || request.getRecordSessionID() != null,
+          ResponseCode.OPERATION_NOT_POSSIBLE.withAddtitionalInfo("load by method, filtering not supported"));
     }
 
     leaveOn(request.getLoadCount() != null && request.getLoadCount() <= 0,
@@ -40,6 +44,9 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
 
     leaveOn(request.getLastLoadedId() != null && !Utils.isPositive(request.getLastLoadedId()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("lastLoadedId"));
+
+    leaveOn(request.getRecordSessionID() != null && !Utils.isPositive(request.getRecordSessionID()),
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("recordSessionID"));
   }
 
   @Override
@@ -60,14 +67,16 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
     }
     else
     {
-      dbRecords = getDao(RecordDAO.class).getAll(request.getLoadCount(), request.getLastLoadedId());
+      dbRecords = getDao(RecordDAO.class).getAll(request.getLoadCount(), request.getLastLoadedId(),
+          request.getRecordSessionID());
     }
 
     for (com.github.joergdev.mosy.backend.persistence.model.Record dbRecord : Utils.nvlCollection(dbRecords))
     {
       Record apiRecord = new Record();
 
-      ObjectUtils.copyValues(dbRecord, apiRecord, "requestData", "response", "created", "interfaceMethod");
+      ObjectUtils.copyValues(dbRecord, apiRecord, "requestData", "response", "created", "interfaceMethod",
+          "recordSession");
       apiRecord.setCreatedAsLdt(dbRecord.getCreated());
 
       // Method / interface
@@ -88,6 +97,16 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
       apiRecord.setInterfaceMethod(apiMethod);
 
       apiRecords.add(apiRecord);
+
+      // RecordSession
+      if (dbRecord.getRecordSession() != null)
+      {
+        RecordSession apiRecordSession = new RecordSession();
+        apiRecordSession.setRecordSessionID(dbRecord.getRecordSession().getRecordSessionID());
+        apiRecordSession.setCreatedAsLdt(dbRecord.getRecordSession().getCreated());
+
+        apiRecord.setRecordSession(apiRecordSession);
+      }
     }
   }
 

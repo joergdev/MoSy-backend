@@ -18,7 +18,7 @@ import com.github.joergdev.mosy.backend.bl.system.LoadBaseData;
 import com.github.joergdev.mosy.backend.bl.system.Login;
 import com.github.joergdev.mosy.backend.bl.system.Logout;
 
-@Path("mosy/api/v_1_0/system")
+@Path(APIConstants.API_URL_BASE + "system")
 public class System
 {
   @Path(value = "login")

@@ -32,6 +32,10 @@ public class Record
   @Column(name = "CREATED", updatable = false)
   private LocalDateTime created;
 
+  @ManyToOne
+  @JoinColumn(name = "RECORD_SESSION_ID")
+  private RecordSession recordSession;
+
   public Integer getRecordId()
   {
     return recordId;
@@ -80,5 +84,15 @@ public class Record
   public void setCreated(LocalDateTime created)
   {
     this.created = created;
+  }
+
+  public RecordSession getRecordSession()
+  {
+    return recordSession;
+  }
+
+  public void setRecordSession(RecordSession recordSession)
+  {
+    this.recordSession = recordSession;
   }
 }

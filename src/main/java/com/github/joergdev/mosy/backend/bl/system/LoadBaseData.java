@@ -9,14 +9,16 @@ import com.github.joergdev.mosy.api.response.system.LoadBaseDataResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
 import com.github.joergdev.mosy.backend.bl.globalconfig.Load;
 import com.github.joergdev.mosy.backend.persistence.dao.InterfaceDao;
-import com.github.joergdev.mosy.backend.persistence.dao.MockSessionDao;
+import com.github.joergdev.mosy.backend.persistence.dao.MockProfileDao;
 import com.github.joergdev.mosy.backend.persistence.dao.RecordDAO;
+import com.github.joergdev.mosy.backend.persistence.dao.RecordSessionDao;
 import com.github.joergdev.mosy.shared.ObjectUtils;
 
 public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
 {
   private BaseData baseDataGlobalConf;
-  private int countMockSessions = 0;
+  private int countRecordSessions = 0;
+  private int countMockProfiles = 0;
   private int countRecords = 0;
   private final List<Interface> apiInterfaces = new ArrayList<>();
 
@@ -36,7 +38,10 @@ public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
     loadInterfaces();
 
     // count mock session
-    countMockSessions = getDao(MockSessionDao.class).getCount();
+    countRecordSessions = getDao(RecordSessionDao.class).getCount();
+
+    // count mock profiles
+    countMockProfiles = getDao(MockProfileDao.class).getCount();
 
     // count records
     countRecords = getDao(RecordDAO.class).getCount();
@@ -79,8 +84,9 @@ public class LoadBaseData extends AbstractBL<Void, LoadBaseDataResponse>
     // copy values of GlobalConfig
     ObjectUtils.copyValues(baseDataGlobalConf, baseData);
 
-    baseData.setCountMockSessions(countMockSessions);
+    baseData.setCountRecordSessions(countRecordSessions);
     baseData.setCountRecords(countRecords);
+    baseData.setCountMockProfiles(countMockProfiles);
 
     baseData.getInterfaces().addAll(apiInterfaces);
   }

@@ -1,13 +1,17 @@
 package com.github.joergdev.mosy.backend.persistence.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -32,6 +36,9 @@ public class MockData
   @Column(name = "ACTIVE", length = 1, nullable = false, columnDefinition = "INT(1)")
   private Boolean active;
 
+  @Column(name = "COMMON", length = 1, nullable = false, columnDefinition = "INT(1) default 0")
+  private Boolean common;
+
   @Column(name = "COUNT_CALLS", nullable = false, updatable = false)
   private Integer countCalls;
 
@@ -41,13 +48,18 @@ public class MockData
   @Column(name = "RESPONSE", length = LENGTH_RESPONSE, nullable = false)
   private String response;
 
+  @Column(name = "REQUEST_HASH", nullable = false, columnDefinition = "INT(11) default 0")
+  private Integer requestHash;
+
+  @Column(name = "RESPONSE_HASH", nullable = false, columnDefinition = "INT(11) default 0")
+  private Integer responseHash;
+
   @ManyToOne
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
 
-  @ManyToOne
-  @JoinColumn(name = "MOCK_SESSION_ID")
-  private MockSession mockSession;
+  @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<MockDataMockProfile> mockProfiles;
 
   public Integer getMockDataId()
   {
@@ -129,13 +141,67 @@ public class MockData
     this.response = response;
   }
 
-  public MockSession getMockSession()
+  /**
+   * @return the mockProfiles
+   */
+  public List<MockDataMockProfile> getMockProfiles()
   {
-    return mockSession;
+    return mockProfiles;
   }
 
-  public void setMockSession(MockSession mockSession)
+  /**
+   * @param mockProfiles the mockProfiles to set
+   */
+  public void setMockProfiles(List<MockDataMockProfile> mockProfiles)
   {
-    this.mockSession = mockSession;
+    this.mockProfiles = mockProfiles;
+  }
+
+  /**
+   * @return the common
+   */
+  public Boolean getCommon()
+  {
+    return common;
+  }
+
+  /**
+   * @param common the common to set
+   */
+  public void setCommon(Boolean common)
+  {
+    this.common = common;
+  }
+
+  /**
+   * @return the requestHash
+   */
+  public Integer getRequestHash()
+  {
+    return requestHash;
+  }
+
+  /**
+   * @param requestHash the requestHash to set
+   */
+  public void setRequestHash(Integer requestHash)
+  {
+    this.requestHash = requestHash;
+  }
+
+  /**
+   * @return the responseHash
+   */
+  public Integer getResponseHash()
+  {
+    return responseHash;
+  }
+
+  /**
+   * @param responseHash the responseHash to set
+   */
+  public void setResponseHash(Integer responseHash)
+  {
+    this.responseHash = responseHash;
   }
 }

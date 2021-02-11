@@ -9,16 +9,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import com.github.joergdev.mosy.api.APIConstants;
 import com.github.joergdev.mosy.api.response.EmptyResponse;
-import com.github.joergdev.mosy.api.response.mocksession.CreateResponse;
-import com.github.joergdev.mosy.api.response.mocksession.LoadSessionsResponse;
+import com.github.joergdev.mosy.api.response.record.session.CreateResponse;
+import com.github.joergdev.mosy.api.response.record.session.LoadSessionsResponse;
 import com.github.joergdev.mosy.backend.api.APIUtils;
-import com.github.joergdev.mosy.backend.bl.mocksession.Create;
-import com.github.joergdev.mosy.backend.bl.mocksession.Delete;
-import com.github.joergdev.mosy.backend.bl.mocksession.LoadSessions;
+import com.github.joergdev.mosy.backend.bl.record.session.Create;
+import com.github.joergdev.mosy.backend.bl.record.session.Delete;
+import com.github.joergdev.mosy.backend.bl.record.session.LoadSessions;
 
-@Path("mosy/api/v_1_0/mock-sessions")
-public class MockSessions
+@Path(APIConstants.API_URL_BASE + "record-sessions")
+public class RecordSessions
 {
   @GET
   public Response loadSessions(@HeaderParam(HttpHeaders.AUTHORIZATION) String token)

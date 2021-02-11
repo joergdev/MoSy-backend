@@ -12,29 +12,32 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+/**
+ * @since 2.0
+ */
 @Entity
-@Table(name = "MOCK_SESSION")
-public class MockSession
+@Table(name = "RECORD_SESSION")
+public class RecordSession
 {
-  @Column(name = "MOCK_SESSION_ID")
+  @Column(name = "RECORD_SESSION_ID")
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private Integer mockSessionID;
+  private Integer recordSessionID;
 
   @Column(name = "CREATED")
   private LocalDateTime created;
 
-  @OneToMany(mappedBy = "mockSession", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-  private List<MockData> mockData;
+  @OneToMany(mappedBy = "recordSession", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<Record> records;
 
-  public Integer getMockSessionID()
+  public Integer getRecordSessionID()
   {
-    return mockSessionID;
+    return recordSessionID;
   }
 
-  public void setMockSessionID(Integer mockSessionID)
+  public void setRecordSessionID(Integer recordSessionID)
   {
-    this.mockSessionID = mockSessionID;
+    this.recordSessionID = recordSessionID;
   }
 
   public LocalDateTime getCreated()
@@ -47,13 +50,19 @@ public class MockSession
     this.created = created;
   }
 
-  public List<MockData> getMockData()
+  /**
+   * @return the records
+   */
+  public List<Record> getRecords()
   {
-    return mockData;
+    return records;
   }
 
-  public void setMockData(List<MockData> mockData)
+  /**
+   * @param records the records to set
+   */
+  public void setRecords(List<Record> records)
   {
-    this.mockData = mockData;
+    this.records = records;
   }
 }

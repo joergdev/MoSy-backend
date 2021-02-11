@@ -7,6 +7,7 @@ public class LoadAllRequest
   private InterfaceMethod interfaceMethod;
   private Integer loadCount;
   private Integer lastLoadedId;
+  private Integer recordSessionID;
 
   public Integer getLoadCount()
   {
@@ -36,5 +37,15 @@ public class LoadAllRequest
   public void setInterfaceMethod(InterfaceMethod interfaceMethod)
   {
     this.interfaceMethod = interfaceMethod;
+  }
+
+  public Integer getRecordSessionID()
+  {
+    return recordSessionID;
+  }
+
+  public void setRecordSessionID(Integer recordSessionID)
+  {
+    this.recordSessionID = recordSessionID;
   }
 }

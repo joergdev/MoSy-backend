@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import com.github.joergdev.mosy.api.APIConstants;
 import com.github.joergdev.mosy.api.request.mockservices.CustomRequestRequest;
 import com.github.joergdev.mosy.api.response.AbstractResponse;
 import com.github.joergdev.mosy.api.response.ResponseMessage;
@@ -28,7 +29,7 @@ import com.github.joergdev.mosy.backend.api.intern.response.mockservices.Capture
 import com.github.joergdev.mosy.backend.bl.mockservices.CaptureCommon;
 import com.github.joergdev.mosy.backend.bl.mockservices.CaptureSoap;
 
-@Path("mosy/api/v_1_0/mock-services")
+@Path(APIConstants.API_URL_BASE + "mock-services")
 public class MockServices
 {
   @Path("soap/{pth:.+}")
@@ -47,7 +48,7 @@ public class MockServices
 
     APIUtils.executeBL(blRequest, blResponse, new CaptureSoap());
 
-    return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse());
+    return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse(), true);
   }
 
   @Path("soap/{pth:.+}")
@@ -70,7 +71,7 @@ public class MockServices
 
       APIUtils.executeBL(blRequest, blResponse, new CaptureSoap());
 
-      return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse());
+      return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse(), false);
     }
     else
     {
@@ -123,7 +124,7 @@ public class MockServices
 
     APIUtils.executeBL(commonReq, commonResp, new CaptureCommon());
 
-    return getResponseByCaptureResponse(commonResp, () -> commonResp.getResponse());
+    return getResponseByCaptureResponse(commonResp, () -> commonResp.getResponse(), false);
   }
 
   @Path("custom-request")
@@ -151,7 +152,8 @@ public class MockServices
     return Response.status(Status.OK).entity(customResponse).build();
   }
 
-  private Response getResponseByCaptureResponse(AbstractResponse blResponse, Supplier<String> getterResponse)
+  private Response getResponseByCaptureResponse(AbstractResponse blResponse, Supplier<String> getterResponse,
+                                                boolean soap)
   {
     if (blResponse.isStateOK())
     {
@@ -166,7 +168,30 @@ public class MockServices
         buiMsg.append(responseMsg.toString()).append("\n\n");
       }
 
-      return Response.serverError().entity(buiMsg.toString()).build();
+      String errorMsg = buiMsg.toString();
+
+      return soap
+          ? getResponseForFailedSoapRequest(errorMsg)
+          : Response.serverError().entity(errorMsg).build();
     }
+  }
+
+  private Response getResponseForFailedSoapRequest(String errorMsg)
+  {
+    // escape html tags
+    errorMsg = errorMsg.replace("<", "#o").replace(">", "#e");
+
+    StringBuilder buiSoap = new StringBuilder();
+
+    buiSoap.append("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+    buiSoap.append("  <soap:Body>");
+    buiSoap.append("    <soap:Fault>");
+    buiSoap.append("      <faultcode>soap:Server</faultcode>");
+    buiSoap.append("      <faultstring>").append(errorMsg).append("</faultstring>");
+    buiSoap.append("    </soap:Fault>");
+    buiSoap.append("  </soap:Body>");
+    buiSoap.append("</soap:Envelope>");
+
+    return Response.ok().entity(buiSoap.toString()).build();
   }
 }

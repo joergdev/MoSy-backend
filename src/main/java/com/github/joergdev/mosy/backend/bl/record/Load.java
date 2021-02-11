@@ -2,6 +2,7 @@ package com.github.joergdev.mosy.backend.bl.record;
 
 import com.github.joergdev.mosy.api.model.InterfaceMethod;
 import com.github.joergdev.mosy.api.model.Record;
+import com.github.joergdev.mosy.api.model.RecordSession;
 import com.github.joergdev.mosy.api.response.ResponseCode;
 import com.github.joergdev.mosy.api.response.record.LoadResponse;
 import com.github.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -27,7 +28,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
         com.github.joergdev.mosy.backend.persistence.model.Record.class, request,
         "record with id " + request);
 
-    ObjectUtils.copyValues(dbRecord, apiRecord, "created", "interfaceMethod");
+    ObjectUtils.copyValues(dbRecord, apiRecord, "created", "interfaceMethod", "recordSession");
     apiRecord.setCreatedAsLdt(dbRecord.getCreated());
 
     // Method / interface
@@ -46,6 +47,16 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     apiMethod.setMockInterface(apiInterface);
 
     apiRecord.setInterfaceMethod(apiMethod);
+
+    // RecordSession
+    if (dbRecord.getRecordSession() != null)
+    {
+      RecordSession apiRecordSession = new RecordSession();
+      apiRecordSession.setRecordSessionID(dbRecord.getRecordSession().getRecordSessionID());
+      apiRecordSession.setCreatedAsLdt(dbRecord.getRecordSession().getCreated());
+
+      apiRecord.setRecordSession(apiRecordSession);
+    }
   }
 
   @Override

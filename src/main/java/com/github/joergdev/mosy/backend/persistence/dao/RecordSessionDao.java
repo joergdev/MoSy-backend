@@ -3,18 +3,18 @@ package com.github.joergdev.mosy.backend.persistence.dao;
 import java.util.List;
 import javax.persistence.Query;
 import com.github.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
-import com.github.joergdev.mosy.backend.persistence.model.MockSession;
+import com.github.joergdev.mosy.backend.persistence.model.RecordSession;
 import com.github.joergdev.mosy.shared.Utils;
 
-public class MockSessionDao extends AbstractDAO
+public class RecordSessionDao extends AbstractDAO
 {
   @SuppressWarnings("unchecked")
-  public List<MockSession> getAll()
+  public List<RecordSession> getAll()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" select * from MOCK_SESSION ");
+    sql.append(" select * from RECORD_SESSION ");
 
-    Query q = entityMgr.createNativeQuery(sql.toString(), MockSession.class);
+    Query q = entityMgr.createNativeQuery(sql.toString(), RecordSession.class);
 
     return q.getResultList();
   }
@@ -22,7 +22,7 @@ public class MockSessionDao extends AbstractDAO
   public int getCount()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append("select count(mock_session_id) from mock_session ");
+    sql.append("select count(record_session_id) from record_session ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
 
@@ -32,7 +32,7 @@ public class MockSessionDao extends AbstractDAO
   public void clearAll()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" delete from mock_session ");
+    sql.append(" delete from record_session ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
 
