@@ -19,6 +19,7 @@ import com.github.joergdev.mosy.backend.bl.record.Save;
 import com.github.joergdev.mosy.backend.bl.utils.PersistenceUtil;
 import com.github.joergdev.mosy.backend.persistence.dao.InterfaceMethodDAO;
 import com.github.joergdev.mosy.backend.persistence.dao.MockDataDAO;
+import com.github.joergdev.mosy.backend.persistence.dao.MockProfileDao;
 import com.github.joergdev.mosy.backend.persistence.dao.RecordConfigDAO;
 import com.github.joergdev.mosy.backend.persistence.model.Interface;
 import com.github.joergdev.mosy.backend.persistence.model.InterfaceMethod;
@@ -201,8 +202,8 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     boolean commonDbMockData = Boolean.TRUE.equals(dbMockData.getCommon())
                                || dbMockData.getMockProfiles().isEmpty();
 
-    Integer mockProfileIDReq = request.getMockProfileID();
-    if (mockProfileIDReq == null)
+    String mockProfileNameReq = request.getMockProfileName();
+    if (mockProfileNameReq == null)
     {
       if (!commonDbMockData)
       {
@@ -212,7 +213,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     else
     {
       if (!dbMockData.getMockProfiles().stream()
-          .anyMatch(mp -> mockProfileIDReq.equals(mp.getMockProfile().getMockProfileID())))
+          .anyMatch(mp -> mockProfileNameReq.equals(mp.getMockProfile().getName())))
       {
         if (commonDbMockData)
         {
@@ -233,9 +234,10 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
   private boolean useCommonMockdata()
   {
-    if (request.getMockProfileID() != null)
+    if (request.getMockProfileName() != null)
     {
-      MockProfile dbMockProfile = entityMgr.find(MockProfile.class, request.getMockProfileID());
+      MockProfile dbMockProfile = getDao(MockProfileDao.class).getByName(request.getMockProfileName(), null);
+
       leaveOn(dbMockProfile == null, ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockprofile"));
 
       return Boolean.TRUE.equals(dbMockProfile.getUseCommonMocks());
@@ -285,10 +287,9 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
   private void checkMockProfile()
   {
-    leaveOn(request.getMockProfileID() != null
-            && entityMgr.find(MockProfile.class, request.getMockProfileID()) == null,
-        ResponseCode.DATA_DOESNT_EXIST
-            .withAddtitionalInfo("mockProfile with id " + request.getMockProfileID()));
+    leaveOn(request.getMockProfileName() != null
+            && !getDao(MockProfileDao.class).existsByName(request.getMockProfileName(), null),
+        ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockProfile " + request.getMockProfileName()));
   }
 
   private void checkRecordSession()

@@ -73,6 +73,11 @@ public class MockProfileDao extends AbstractDAO
 
   public boolean existsByName(String name, Integer exceptID)
   {
+    return getByName(name, exceptID) != null;
+  }
+
+  public MockProfile getByName(String name, Integer exceptID)
+  {
     Objects.requireNonNull(name, "name");
 
     StringBuilder sql = new StringBuilder();
@@ -80,7 +85,7 @@ public class MockProfileDao extends AbstractDAO
     Map<String, Object> params = new HashMap<>();
     params.put("name", name);
 
-    sql.append(" select 1 from MOCK_PROFILE");
+    sql.append(" select * from MOCK_PROFILE");
     sql.append(" where name = :name ");
 
     if (exceptID != null)
@@ -89,9 +94,9 @@ public class MockProfileDao extends AbstractDAO
       params.put("id", exceptID);
     }
 
-    Query q = entityMgr.createNativeQuery(sql.toString());
+    Query q = entityMgr.createNativeQuery(sql.toString(), MockProfile.class);
     params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
-    return getSingleResult(q) != null;
+    return getSingleResult(q);
   }
 }

@@ -14,7 +14,7 @@ public class CaptureCommonRequest
   private String routeAddition;
   private String absolutePath;
 
-  private Integer mockProfileIdCached = -1;
+  private String mockProfileNameCached = " ";
 
   private Integer recordSessionIdCached = -1;
 
@@ -28,17 +28,17 @@ public class CaptureCommonRequest
     this.content = content;
   }
 
-  public Integer getMockProfileID()
+  public String getMockProfileName()
   {
-    if (mockProfileIdCached != null && mockProfileIdCached == -1)
+    if (" ".equals(mockProfileNameCached))
     {
-      mockProfileIdCached = httpHeaders == null
+      mockProfileNameCached = httpHeaders == null
           ? null
-          : Utils.asInteger(Utils.getFirstElementOfCollection(
-              httpHeaders.getRequestHeader(APIConstants.HTTP_HEADER_MOCK_PROFILE_ID)));
+          : Utils.getFirstElementOfCollection(
+              httpHeaders.getRequestHeader(APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME));
     }
 
-    return mockProfileIdCached;
+    return mockProfileNameCached;
   }
 
   public Integer getRecordSessionID()

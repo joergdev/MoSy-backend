@@ -45,7 +45,7 @@ public class SoapRouting
         // Transfer header data
         for (String headerKey : headerMap.keySet())
         {
-          if (APIConstants.HTTP_HEADER_MOCK_PROFILE_ID.equals(headerKey)
+          if (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey)
               || APIConstants.HTTP_HEADER_RECORD_SESSION_ID.equals(headerKey))
           {
             continue;
