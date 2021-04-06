@@ -18,8 +18,8 @@ public class Save extends AbstractBL<de.joergdev.mosy.api.model.MockProfile, Sav
     leaveOn(request == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
     leaveOn(Utils.isEmpty(request.getName())
-            || request.getName()
-                .length() > de.joergdev.mosy.backend.persistence.model.MockProfile.LENGTH_NAME,
+            || request.getName().length() > de.joergdev.mosy.backend.persistence.model.MockProfile.LENGTH_NAME
+            || Utils.isNumeric(request.getName()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("name"));
 
     leaveOn(!Utils.isEmpty(request.getDescription())
