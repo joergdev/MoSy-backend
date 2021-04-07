@@ -10,6 +10,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import de.joergdev.mosy.api.APIConstants;
+import de.joergdev.mosy.api.model.MockProfile;
 import de.joergdev.mosy.api.response.EmptyResponse;
 import de.joergdev.mosy.api.response.mockprofile.LoadAllResponse;
 import de.joergdev.mosy.api.response.mockprofile.LoadMockDataResponse;
@@ -22,6 +23,7 @@ import de.joergdev.mosy.backend.bl.mockprofile.Load;
 import de.joergdev.mosy.backend.bl.mockprofile.LoadAll;
 import de.joergdev.mosy.backend.bl.mockprofile.LoadMockData;
 import de.joergdev.mosy.backend.bl.mockprofile.Save;
+import de.joergdev.mosy.shared.Utils;
 
 @Path(APIConstants.API_URL_BASE + "mock-profiles")
 public class MockProfiles
@@ -60,11 +62,22 @@ public class MockProfiles
     return APIUtils.executeBL(id, new EmptyResponse(), new Delete(), token);
   }
 
-  @Path("{id}/mockdata")
+  @Path("{name}/mockdata")
   @GET
   public Response loadMockData(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                               @PathParam("id") Integer id)
+                               @PathParam("name") String idOrName)
   {
-    return APIUtils.executeBL(id, new LoadMockDataResponse(), new LoadMockData(), token);
+    MockProfile apiMockProfile = new MockProfile();
+
+    if (Utils.isNumeric(idOrName))
+    {
+      apiMockProfile.setMockProfileID(Integer.valueOf(idOrName));
+    }
+    else
+    {
+      apiMockProfile.setName(idOrName);
+    }
+
+    return APIUtils.executeBL(apiMockProfile, new LoadMockDataResponse(), new LoadMockData(), token);
   }
 }
