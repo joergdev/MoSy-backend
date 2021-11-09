@@ -83,10 +83,10 @@ public class MockProfileDao extends AbstractDAO
     StringBuilder sql = new StringBuilder();
 
     Map<String, Object> params = new HashMap<>();
-    params.put("name", name);
+    params.put("name", name.toUpperCase());
 
     sql.append(" select * from MOCK_PROFILE");
-    sql.append(" where name = :name ");
+    sql.append(" where UPPER(name) = :name ");
 
     if (exceptID != null)
     {
