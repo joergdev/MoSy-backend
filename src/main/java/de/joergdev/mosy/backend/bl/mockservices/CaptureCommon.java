@@ -49,8 +49,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathInterface()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath interface"));
 
-    leaveOn(!request.isRouteOnly()
-            && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
+    leaveOn(!request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
 
     leaveOn(!request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getContent()),
@@ -213,7 +212,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     else
     {
       if (!dbMockData.getMockProfiles().stream()
-          .anyMatch(mp -> mockProfileNameReq.equals(mp.getMockProfile().getName())))
+          .anyMatch(mp -> mockProfileNameReq.equalsIgnoreCase(mp.getMockProfile().getName())))
       {
         if (commonDbMockData)
         {

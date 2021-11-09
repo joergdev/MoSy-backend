@@ -2,6 +2,7 @@ package de.joergdev.mosy.backend.bl.mockprofile;
 
 import java.util.ArrayList;
 import java.util.List;
+import de.joergdev.mosy.api.model.InterfaceMethod;
 import de.joergdev.mosy.api.model.MockData;
 import de.joergdev.mosy.api.model.MockProfile;
 import de.joergdev.mosy.api.response.ResponseCode;
@@ -47,6 +48,8 @@ public class LoadMockData extends AbstractBL<MockProfile, LoadMockDataResponse>
       dbMockProfile = getDao(MockProfileDao.class).getByName(name, null);
       leaveOn(dbMockProfile == null,
           ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockProfile with name " + name));
+
+      request.setMockProfileID(dbMockProfile.getMockProfileID());
     }
 
     List<MockDataMockProfile> dbMockDataMockProfiles = dbMockProfile.getMockData();
@@ -59,6 +62,13 @@ public class LoadMockData extends AbstractBL<MockProfile, LoadMockDataResponse>
       ObjectUtils.copyValues(dbMockData, apiMockData, "created", "interfaceMethod", "request", "response",
           "mockProfiles");
       apiMockData.setCreatedAsLdt(dbMockData.getCreated());
+
+      // set ids to model
+      InterfaceMethod apiInterfaceMethod = new InterfaceMethod();
+      apiInterfaceMethod.setInterfaceMethodId(dbMockData.getInterfaceMethod().getInterfaceMethodId());
+      apiMockData.setInterfaceMethod(apiInterfaceMethod);
+
+      apiMockData.getMockProfiles().add(request);
 
       apiMockDataList.add(apiMockData);
     }

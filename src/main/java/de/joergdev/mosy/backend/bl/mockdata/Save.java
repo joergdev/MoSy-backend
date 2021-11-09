@@ -12,6 +12,7 @@ import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.utils.BlUtils;
 import de.joergdev.mosy.backend.bl.utils.PersistenceUtil;
 import de.joergdev.mosy.backend.persistence.dao.MockDataDAO;
+import de.joergdev.mosy.backend.persistence.dao.MockProfileDao;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import de.joergdev.mosy.backend.persistence.model.MockProfile;
@@ -31,8 +32,7 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     leaveOn(request == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
     leaveOn(Utils.isEmpty(request.getTitle())
-            || request.getTitle()
-                .length() > de.joergdev.mosy.backend.persistence.model.MockData.LENGTH_TITLE,
+            || request.getTitle().length() > de.joergdev.mosy.backend.persistence.model.MockData.LENGTH_TITLE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("title"));
 
     apiInterfaceMethodRequest = request.getInterfaceMethod();
@@ -61,8 +61,13 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     for (de.joergdev.mosy.api.model.MockProfile apiMockProfile : request.getMockProfiles())
     {
-      leaveOn(apiMockProfile.getMockProfileID() == null,
-          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockProfile"));
+      Integer apiMockProfileID = apiMockProfile.getMockProfileID();
+
+      leaveOn(apiMockProfileID != null && !Utils.isPositive(apiMockProfileID),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockProfileID"));
+
+      leaveOn(apiMockProfileID == null && Utils.isEmpty(apiMockProfile.getName()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockProfileID / name"));
     }
   }
 
@@ -185,9 +190,21 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     for (de.joergdev.mosy.api.model.MockProfile apiMockProfile : request.getMockProfiles())
     {
       Integer mockProfileID = apiMockProfile.getMockProfileID();
+      MockProfile dbMockProfile = null;
 
-      MockProfile dbMockProfile = findDbEntity(MockProfile.class, mockProfileID,
-          "mockProfile with id: " + mockProfileID);
+      if (mockProfileID != null)
+      {
+        dbMockProfile = findDbEntity(MockProfile.class, mockProfileID,
+            "mockProfile with id: " + mockProfileID);
+      }
+      else
+      {
+        dbMockProfile = getDao(MockProfileDao.class).getByName(apiMockProfile.getName(), null);
+        leaveOn(dbMockProfile == null,
+            ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockProfile " + apiMockProfile.getName()));
+
+        mockProfileID = dbMockProfile.getMockProfileID();
+      }
 
       dbMockProfiles.put(mockProfileID, dbMockProfile);
     }
