@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import de.joergdev.mosy.api.APIConstants;
@@ -38,9 +40,7 @@ public class SoapRouting
       }
       else
       {
-        outputStreamRequest = new ByteArrayOutputStream();
-        outputStreamRequest.write(request.getBytes());
-        byte[] bytesRequest = outputStreamRequest.toByteArray();
+        String charset = null;
 
         // Transfer header data
         for (String headerKey : headerMap.keySet())
@@ -62,9 +62,18 @@ public class SoapRouting
             for (String headerValue : headerValues)
             {
               httpConn.addRequestProperty(headerKey, headerValue);
+
+              if ("charset".equalsIgnoreCase(headerKey))
+              {
+                charset = headerValue;
+              }
             }
           }
         }
+
+        outputStreamRequest = new ByteArrayOutputStream();
+        outputStreamRequest.write(request.getBytes(getCharset(charset)));
+        byte[] bytesRequest = outputStreamRequest.toByteArray();
 
         httpConn.setRequestMethod("POST");
         httpConn.setDoOutput(true);
@@ -106,6 +115,24 @@ public class SoapRouting
     {
       Utils.safeClose(outputStreamRequest, httpOutRequest, inputStreamResponse, inputStreamReaderResponse,
           bufReaderResponse);
+    }
+  }
+
+  private static Charset getCharset(String charset)
+  {
+    if (Utils.isEmpty(charset))
+    {
+      return StandardCharsets.UTF_8;
+    }
+
+    try
+    {
+      return Charset.forName(charset);
+    }
+    catch (Exception ex)
+    {
+      // Fallback
+      return StandardCharsets.UTF_8;
     }
   }
 }
