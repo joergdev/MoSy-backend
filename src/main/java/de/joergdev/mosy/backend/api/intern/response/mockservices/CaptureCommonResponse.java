@@ -6,6 +6,7 @@ import de.joergdev.mosy.api.response.AbstractResponse;
 public class CaptureCommonResponse extends AbstractResponse
 {
   private String response;
+  private Integer responseHttpCode;
   private Boolean record;
   private Boolean route;
   private InterfaceMethod interfaceMethod;
@@ -48,5 +49,15 @@ public class CaptureCommonResponse extends AbstractResponse
   public void setInterfaceMethod(InterfaceMethod interfaceMethod)
   {
     this.interfaceMethod = interfaceMethod;
+  }
+
+  public Integer getResponseHttpCode()
+  {
+    return responseHttpCode;
+  }
+
+  public void setResponseHttpCode(Integer responseHttpCode)
+  {
+    this.responseHttpCode = responseHttpCode;
   }
 }

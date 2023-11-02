@@ -2,19 +2,21 @@ package de.joergdev.mosy.backend.api.intern.request.mockservices;
 
 import javax.ws.rs.core.HttpHeaders;
 import de.joergdev.mosy.api.APIConstants;
+import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.shared.Utils;
 
 public class CaptureCommonRequest
 {
   private String servicePathInterface;
   private String servicePathMethod;
+  private HttpMethod httpMethod;
   private HttpHeaders httpHeaders;
   private String content;
   private boolean routeOnly = false;
   private String routeAddition;
   private String absolutePath;
 
-  private String mockProfileNameCached = " ";
+  private String mockProfileNameCached = "______UNSET_______";
 
   private Integer recordSessionIdCached = -1;
 
@@ -30,7 +32,7 @@ public class CaptureCommonRequest
 
   public String getMockProfileName()
   {
-    if (" ".equals(mockProfileNameCached))
+    if ("______UNSET_______".equals(mockProfileNameCached))
     {
       mockProfileNameCached = httpHeaders == null
           ? null
@@ -112,5 +114,15 @@ public class CaptureCommonRequest
   public void setAbsolutePath(String absolutePath)
   {
     this.absolutePath = absolutePath;
+  }
+
+  public HttpMethod getHttpMethod()
+  {
+    return httpMethod;
+  }
+
+  public void setHttpMethod(HttpMethod httpMethod)
+  {
+    this.httpMethod = httpMethod;
   }
 }

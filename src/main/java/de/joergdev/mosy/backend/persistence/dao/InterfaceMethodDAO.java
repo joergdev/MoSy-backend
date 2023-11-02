@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.persistence.Query;
+import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.shared.Utils;
@@ -55,28 +56,33 @@ public class InterfaceMethodDAO extends AbstractDAO
         : Integer.valueOf(1).equals(Utils.getFirstElementOfCollection(resultList));
   }
 
-  public InterfaceMethod getByServicePath(Integer interfaceId, String servicePath)
+  public InterfaceMethod getByServicePath(Integer interfaceId, String servicePath,
+                                          boolean nonStrictSearchServicePath, HttpMethod httpMethod)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
-    return getBySearchParams(interfaceId, null, servicePath, null);
+    return getBySearchParams(interfaceId, null, servicePath, nonStrictSearchServicePath, httpMethod, null);
   }
 
-  public boolean existsByInterfaceIdServicePath(Integer interfaceId, String servicePath, Integer exceptID)
+  public boolean existsByInterfaceIdServicePath(Integer interfaceId, String servicePath,
+                                                boolean nonStrictSearchServicePath, HttpMethod httpMethod,
+                                                Integer exceptID)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
-    return getBySearchParams(interfaceId, null, servicePath, exceptID) != null;
+    return getBySearchParams(interfaceId, null, servicePath, nonStrictSearchServicePath, httpMethod,
+        exceptID) != null;
   }
 
   public boolean existsByInterfaceIdName(Integer interfaceId, String name, Integer exceptID)
   {
     Objects.requireNonNull(name, "name");
 
-    return getBySearchParams(interfaceId, name, null, exceptID) != null;
+    return getBySearchParams(interfaceId, name, null, false, null, exceptID) != null;
   }
 
   public InterfaceMethod getBySearchParams(Integer interfaceId, String name, String servicePath,
+                                           boolean nonStrictSearchServicePath, HttpMethod httpMethod,
                                            Integer exceptID)
   {
     Objects.requireNonNull(interfaceId, "interfaceId");
@@ -102,8 +108,14 @@ public class InterfaceMethodDAO extends AbstractDAO
 
     if (servicePath != null)
     {
-      sql.append(" and SERVICE_PATH = :svc_path ");
+      sql.append(" and :svc_path like SERVICE_PATH_INTERN ");
       params.put("svc_path", servicePath);
+    }
+
+    if (httpMethod != null)
+    {
+      sql.append(" and HTTP_METHOD = :http_method ");
+      params.put("http_method", httpMethod.name());
     }
 
     if (exceptID != null)
@@ -115,6 +127,51 @@ public class InterfaceMethodDAO extends AbstractDAO
     Query q = entityMgr.createNativeQuery(sql.toString(), InterfaceMethod.class);
     params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
-    return getSingleResult(q);
+    // search by name
+    if (Utils.isEmpty(servicePath))
+    {
+      return getSingleResult(q);
+    }
+    // search by servicePath
+    else
+    {
+      List<InterfaceMethod> methodsFound = getResultList(q);
+
+      int cntPartsSvcPath = servicePath.split("/").length;
+
+      InterfaceMethod methodFound = null;
+      int cntPartsSvcPathMethodFound = -1;
+
+      for (InterfaceMethod dbMethod : methodsFound)
+      {
+        int cntPartsSvcPathDbMethod = dbMethod.getServicePathIntern().split("/").length;
+
+        // non-strict
+        // get method most matching
+        // for example:
+        //   search input servicePath: cars/123/wheels/456
+        //   method1 servicePath:      cars/{id}
+        //   method2 servicePath:      cars/{id}/wheels/{w-id}0 => match
+        if (nonStrictSearchServicePath)
+        {
+          if (cntPartsSvcPathDbMethod > cntPartsSvcPathMethodFound)
+          {
+            methodFound = dbMethod;
+            cntPartsSvcPathMethodFound = cntPartsSvcPathDbMethod;
+          }
+        }
+        // strict
+        // testsvc/123 and testsvc/* matches
+        else
+        {
+          if (cntPartsSvcPathDbMethod == cntPartsSvcPath)
+          {
+            return dbMethod;
+          }
+        }
+      }
+
+      return methodFound;
+    }
   }
 }

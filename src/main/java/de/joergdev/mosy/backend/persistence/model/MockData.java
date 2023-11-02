@@ -45,8 +45,11 @@ public class MockData
   @Column(name = "REQUEST", length = LENGTH_REQUEST, nullable = true)
   private String request;
 
-  @Column(name = "RESPONSE", length = LENGTH_RESPONSE, nullable = false)
+  @Column(name = "RESPONSE", length = LENGTH_RESPONSE, nullable = true)
   private String response;
+
+  @Column(name = "HTTP_RETURN_CODE", nullable = true, columnDefinition = "INT(4) default null")
+  private Integer httpReturnCode;
 
   @Column(name = "REQUEST_HASH", nullable = false, columnDefinition = "INT(11) default 0")
   private Integer requestHash;
@@ -60,6 +63,9 @@ public class MockData
 
   @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   private List<MockDataMockProfile> mockProfiles;
+
+  @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<MockDataPathParam> pathParams;
 
   public Integer getMockDataId()
   {
@@ -203,5 +209,25 @@ public class MockData
   public void setResponseHash(Integer responseHash)
   {
     this.responseHash = responseHash;
+  }
+
+  public Integer getHttpReturnCode()
+  {
+    return httpReturnCode;
+  }
+
+  public void setHttpReturnCode(Integer httpReturnCode)
+  {
+    this.httpReturnCode = httpReturnCode;
+  }
+
+  public List<MockDataPathParam> getPathParams()
+  {
+    return pathParams;
+  }
+
+  public void setPathParams(List<MockDataPathParam> pathParams)
+  {
+    this.pathParams = pathParams;
   }
 }

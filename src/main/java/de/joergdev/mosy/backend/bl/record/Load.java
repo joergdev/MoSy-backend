@@ -1,12 +1,14 @@
 package de.joergdev.mosy.backend.bl.record;
 
 import de.joergdev.mosy.api.model.InterfaceMethod;
+import de.joergdev.mosy.api.model.PathParam;
 import de.joergdev.mosy.api.model.Record;
 import de.joergdev.mosy.api.model.RecordSession;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.record.LoadResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.persistence.model.Interface;
+import de.joergdev.mosy.backend.persistence.model.RecordPathParam;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -25,15 +27,13 @@ public class Load extends AbstractBL<Integer, LoadResponse>
   protected void execute()
   {
     de.joergdev.mosy.backend.persistence.model.Record dbRecord = findDbEntity(
-        de.joergdev.mosy.backend.persistence.model.Record.class, request,
-        "record with id " + request);
+        de.joergdev.mosy.backend.persistence.model.Record.class, request, "record with id " + request);
 
-    ObjectUtils.copyValues(dbRecord, apiRecord, "created", "interfaceMethod", "recordSession");
+    ObjectUtils.copyValues(dbRecord, apiRecord, "created", "interfaceMethod", "recordSession", "pathParams");
     apiRecord.setCreatedAsLdt(dbRecord.getCreated());
 
     // Method / interface
-    de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = dbRecord
-        .getInterfaceMethod();
+    de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = dbRecord.getInterfaceMethod();
     Interface dbInterface = dbMethod.getMockInterface();
 
     InterfaceMethod apiMethod = new InterfaceMethod();
@@ -56,6 +56,12 @@ public class Load extends AbstractBL<Integer, LoadResponse>
       apiRecordSession.setCreatedAsLdt(dbRecord.getRecordSession().getCreated());
 
       apiRecord.setRecordSession(apiRecordSession);
+    }
+
+    // PathParams
+    for (RecordPathParam dbPathParam : dbRecord.getPathParams())
+    {
+      apiRecord.getPathParams().add(new PathParam(dbPathParam.getKey(), dbPathParam.getValue()));
     }
   }
 
