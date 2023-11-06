@@ -4,14 +4,11 @@ import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureSoapRequest;
 import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
-import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureSoapResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.shared.Utils;
 
-public class CaptureSoap extends AbstractBL<CaptureSoapRequest, CaptureSoapResponse>
+public class CaptureSoap extends AbstractBL<CaptureSoapRequest, CaptureCommonResponse>
 {
-  private String soapResponse;
-
   @Override
   protected void beforeExecute()
   {
@@ -46,10 +43,7 @@ public class CaptureSoap extends AbstractBL<CaptureSoapRequest, CaptureSoapRespo
       commonReq.setRouteAddition("?wsdl");
     }
 
-    CaptureCommonResponse commonResp = invokeSubBL(new CaptureCommon(), commonReq,
-        new CaptureCommonResponse());
-
-    soapResponse = commonResp.getResponse();
+    invokeSubBL(new CaptureCommon(), commonReq, response);
   }
 
   private String getServicePathMethod()
@@ -96,6 +90,6 @@ public class CaptureSoap extends AbstractBL<CaptureSoapRequest, CaptureSoapRespo
   @Override
   protected void fillOutput()
   {
-    response.setResponse(soapResponse);
+    // nothing to do, response get filled by subcall
   }
 }

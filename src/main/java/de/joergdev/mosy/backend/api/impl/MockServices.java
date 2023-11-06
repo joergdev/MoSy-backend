@@ -3,21 +3,21 @@ package de.joergdev.mosy.backend.api.impl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.api.request.mockservices.CustomRequestRequest;
-import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseMessage;
 import de.joergdev.mosy.api.response.mockservices.CustomRequestResponse;
 import de.joergdev.mosy.backend.api.APIUtils;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureSoapRequest;
 import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
-import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureSoapResponse;
 import de.joergdev.mosy.backend.bl.mockservices.CaptureCommon;
 import de.joergdev.mosy.backend.bl.mockservices.CaptureRest;
 import de.joergdev.mosy.backend.bl.mockservices.CaptureSoap;
+import de.joergdev.mosy.shared.Utils;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,6 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -48,11 +49,11 @@ public class MockServices
     blRequest.setHttpHeaders(headers);
     blRequest.setAbsolutePath(uriInfo.getAbsolutePath().toString());
 
-    CaptureSoapResponse blResponse = new CaptureSoapResponse();
+    CaptureCommonResponse blResponse = new CaptureCommonResponse();
 
     APIUtils.executeBL(blRequest, blResponse, new CaptureSoap());
 
-    return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse(), null, true);
+    return getResponseByCaptureResponse(blResponse, null, true);
   }
 
   @Path("soap/{pth:.+}")
@@ -71,11 +72,11 @@ public class MockServices
       blRequest.setWsdlRequest(true);
       blRequest.setAbsolutePath(uriInfo.getAbsolutePath().toString());
 
-      CaptureSoapResponse blResponse = new CaptureSoapResponse();
+      CaptureCommonResponse blResponse = new CaptureCommonResponse();
 
       APIUtils.executeBL(blRequest, blResponse, new CaptureSoap());
 
-      return getResponseByCaptureResponse(blResponse, () -> blResponse.getResponse(), null, false);
+      return getResponseByCaptureResponse(blResponse, null, false);
     }
     else
     {
@@ -126,8 +127,7 @@ public class MockServices
 
     APIUtils.executeBL(commonReq, commonResp, new CaptureRest());
 
-    return getResponseByCaptureResponse(commonResp, () -> commonResp.getResponse(),
-        () -> commonResp.getResponseHttpCode(), false);
+    return getResponseByCaptureResponse(commonResp, () -> commonResp.getResponseHttpCode(), false);
   }
 
   @Path("custom-request")
@@ -155,26 +155,26 @@ public class MockServices
     return Response.status(Status.OK).entity(customResponse).build();
   }
 
-  private Response getResponseByCaptureResponse(AbstractResponse blResponse, Supplier<String> getterResponse,
+  private Response getResponseByCaptureResponse(CaptureCommonResponse blResponse,
                                                 Supplier<Integer> getterHttpReturnCode, boolean soap)
   {
+    ResponseBuilder responseBui = null;
+
     if (blResponse.isStateOK())
     {
       Integer httpReturnCode = getterHttpReturnCode == null
           ? null
           : getterHttpReturnCode.get();
 
-      ResponseBuilder responseBui = Response.status(httpReturnCode == null
+      responseBui = Response.status(httpReturnCode == null
           ? Status.OK
           : Status.fromStatusCode(getterHttpReturnCode.get()));
 
-      String entity = getterResponse.get();
+      String entity = blResponse.getResponse();
       if (entity != null)
       {
         responseBui = responseBui.entity(entity);
       }
-
-      return responseBui.build();
     }
     else
     {
@@ -193,13 +193,42 @@ public class MockServices
 
       String errorMsg = buiMsg.toString();
 
-      return soap
-          ? getResponseForFailedSoapRequest(errorMsg)
-          : Response.serverError().entity(errorMsg).build();
+      if (soap)
+      {
+        responseBui = getResponseForFailedSoapRequest(errorMsg);
+      }
+      else
+      {
+        responseBui = Response.serverError().entity(errorMsg);
+      }
     }
+
+    // Transfer Response Headers
+    MultivaluedMap<String, Object> headers = blResponse.getResponseHeaders();
+    if (headers != null)
+    {
+      for (Entry<String, List<Object>> headerEntry : headers.entrySet())
+      {
+        String headerKey = headerEntry.getKey();
+        List<Object> headerList = headerEntry.getValue();
+
+        if (!Utils.isEmpty(headerKey) && headerList != null)
+        {
+          for (Object headerVal : headerList)
+          {
+            if (headerVal != null)
+            {
+              responseBui.header(headerKey, headerVal);
+            }
+          }
+        }
+      }
+    }
+
+    return responseBui.build();
   }
 
-  private Response getResponseForFailedSoapRequest(String errorMsg)
+  private ResponseBuilder getResponseForFailedSoapRequest(String errorMsg)
   {
     // escape html tags
     errorMsg = errorMsg.replace("<", "#o").replace(">", "#e");
@@ -215,6 +244,6 @@ public class MockServices
     buiSoap.append("  </soap:Body>");
     buiSoap.append("</soap:Envelope>");
 
-    return Response.ok().entity(buiSoap.toString()).build();
+    return Response.ok().entity(buiSoap.toString());
   }
 }

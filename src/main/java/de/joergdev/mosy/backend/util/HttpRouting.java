@@ -2,7 +2,6 @@ package de.joergdev.mosy.backend.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -75,9 +74,10 @@ public class HttpRouting
       {
         inputStreamResponse = httpConn.getInputStream();
       }
-      catch (FileNotFoundException isNotFoundException)
+      catch (IOException ioEx)
       {
-        // FileNotFoundException => Http 4xx, try to read from error stream
+        // for example FileNotFoundException => Http 4xx, try to read from error stream
+        // or IOException Http 500 failed auth.
         inputStreamResponse = httpConn.getErrorStream();
       }
 

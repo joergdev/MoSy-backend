@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import de.joergdev.mosy.api.model.BaseData;
 import de.joergdev.mosy.api.model.HttpMethod;
@@ -44,9 +45,8 @@ import de.joergdev.mosy.shared.Utils;
 public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommonResponse>
 {
   private String mockResponse;
-
-  /** REST */
   private Integer mockResponseHttpCode;
+  private MultivaluedMap<String, Object> mockResponseHeaders;
 
   private InterfaceMethod dbMethod;
 
@@ -422,27 +422,35 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       routingURL += request.getRouteAddition();
     }
 
-    // route soap request
-    if (InterfaceType.SOAP.equals(interfaceType))
-    {
-      mockResponse = (String) HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent,
-          HttpMethod.POST, request.getHttpHeaders().getRequestHeaders(), true).getEntity();
-    }
-    // route rest request
-    else if (InterfaceType.REST.equals(interfaceType))
-    {
-      Response response = HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent,
-          request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(), false);
+    Response response = getRoutingResponse(requestContent, interfaceType, routingURL);
 
-      mockResponse = (String) response.getEntity();
-      mockResponseHttpCode = response.getStatus();
-    }
+    mockResponse = (String) response.getEntity();
+    mockResponseHttpCode = response.getStatus();
+    mockResponseHeaders = response.getHeaders();
 
     // if should be recorded then save
     if (recordRequestResponse(baseData, dbInterface, dbMethod, interfaceType))
     {
       saveRecord(requestContent, interfaceType, dbMethod);
     }
+  }
+
+  private Response getRoutingResponse(String requestContent, InterfaceType interfaceType, String routingURL)
+  {
+    // route soap request
+    if (InterfaceType.SOAP.equals(interfaceType))
+    {
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST,
+          request.getHttpHeaders().getRequestHeaders(), true);
+    }
+    // route rest request
+    else if (InterfaceType.REST.equals(interfaceType))
+    {
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent,
+          request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(), false);
+    }
+
+    throw new IllegalArgumentException("routing not possible for interfaceType " + interfaceType);
   }
 
   private void saveRecord(String requestContent, InterfaceType interfaceType, InterfaceMethod dbMethod)
@@ -679,6 +687,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
   {
     response.setResponse(mockResponse);
     response.setResponseHttpCode(mockResponseHttpCode);
+    response.setResponseHeaders(mockResponseHeaders);
 
     if (dbMethod != null)
     {
