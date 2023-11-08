@@ -92,7 +92,7 @@ public class InterfaceDao extends AbstractDAO
       if (servicePathStartsWith)
       {
         // for example: "http://restservice/cars/1/wheels like http://restservice/cars%"
-        sql.append(" :svc_path like SERVICE_PATH || '%' or SERVICE_PATH || '%' like :svc_path ");
+        sql.append(" (:svc_path like SERVICE_PATH || '%' or SERVICE_PATH || '%' like :svc_path) ");
       }
       else
       {
