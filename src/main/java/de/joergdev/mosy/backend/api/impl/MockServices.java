@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.function.Supplier;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.HttpMethod;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.request.mockservices.CustomRequestRequest;
 import de.joergdev.mosy.api.response.ResponseMessage;
 import de.joergdev.mosy.api.response.mockservices.CustomRequestResponse;
@@ -87,24 +88,26 @@ public class MockServices
 
   @Path("rest/{pth:.+}")
   @POST
-  public Response captureRestPost(@PathParam("pth") String path, @Context HttpHeaders headers, String content)
+  public Response captureRestPost(@PathParam("pth") String path, @Context HttpHeaders headers,
+                                  @Context UriInfo uriInfo, String content)
   {
-    return captureRest(path, HttpMethod.POST, headers, content);
+    return captureRest(path, HttpMethod.POST, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
   @PUT
-  public Response captureRestPut(@PathParam("pth") String path, @Context HttpHeaders headers, String content)
+  public Response captureRestPut(@PathParam("pth") String path, @Context HttpHeaders headers,
+                                 @Context UriInfo uriInfo, String content)
   {
-    return captureRest(path, HttpMethod.PUT, headers, content);
+    return captureRest(path, HttpMethod.PUT, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
   @DELETE
   public Response captureRestDelete(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                    String content)
+                                    @Context UriInfo uriInfo, String content)
   {
-    return captureRest(path, HttpMethod.DELETE, headers, content);
+    return captureRest(path, HttpMethod.DELETE, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
@@ -112,16 +115,29 @@ public class MockServices
   public Response captureRestGet(@PathParam("pth") String path, @Context HttpHeaders headers,
                                  @Context UriInfo uriInfo, String content)
   {
-    return captureRest(path, HttpMethod.GET, headers, content);
+    return captureRest(path, HttpMethod.GET, headers, uriInfo, content);
   }
 
-  private Response captureRest(String path, HttpMethod httpMethod, HttpHeaders headers, String content)
+  private Response captureRest(String path, HttpMethod httpMethod, HttpHeaders headers, UriInfo uriInfo,
+                               String content)
   {
     CaptureCommonRequest commonReq = new CaptureCommonRequest();
     commonReq.setHttpHeaders(headers);
     commonReq.setContent(content);
     commonReq.setServicePathInterface(path);
     commonReq.setHttpMethod(httpMethod);
+
+    MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+    if (queryParams != null)
+    {
+      for (Entry<String, List<String>> queryParamEntry : queryParams.entrySet())
+      {
+        for (String queryParamVal : queryParamEntry.getValue())
+        {
+          commonReq.getUrlArguments().add(new UrlArgument(queryParamEntry.getKey(), queryParamVal));
+        }
+      }
+    }
 
     CaptureCommonResponse commonResp = new CaptureCommonResponse();
 
@@ -218,6 +234,11 @@ public class MockServices
           {
             if (headerVal != null)
             {
+              if ("Transfer-encoding".equals(headerKey) && headerVal.toString().contains("chunked"))
+              {
+                continue;
+              }
+
               responseBui.header(headerKey, headerVal);
             }
           }

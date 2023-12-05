@@ -67,6 +67,9 @@ public class MockData
   @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   private List<MockDataPathParam> pathParams;
 
+  @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<MockDataUrlArgument> urlArguments;
+
   public Integer getMockDataId()
   {
     return mockDataId;
@@ -229,5 +232,15 @@ public class MockData
   public void setPathParams(List<MockDataPathParam> pathParams)
   {
     this.pathParams = pathParams;
+  }
+
+  public List<MockDataUrlArgument> getUrlArguments()
+  {
+    return urlArguments;
+  }
+
+  public void setUrlArguments(List<MockDataUrlArgument> urlArguments)
+  {
+    this.urlArguments = urlArguments;
   }
 }

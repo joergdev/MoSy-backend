@@ -4,11 +4,13 @@ import de.joergdev.mosy.api.model.InterfaceMethod;
 import de.joergdev.mosy.api.model.PathParam;
 import de.joergdev.mosy.api.model.Record;
 import de.joergdev.mosy.api.model.RecordSession;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.record.LoadResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.persistence.model.Interface;
 import de.joergdev.mosy.backend.persistence.model.RecordPathParam;
+import de.joergdev.mosy.backend.persistence.model.RecordUrlArgument;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -62,6 +64,12 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     for (RecordPathParam dbPathParam : dbRecord.getPathParams())
     {
       apiRecord.getPathParams().add(new PathParam(dbPathParam.getKey(), dbPathParam.getValue()));
+    }
+
+    // URL args
+    for (RecordUrlArgument dbUrlArg : dbRecord.getUrlArguments())
+    {
+      apiRecord.getUrlArguments().add(new UrlArgument(dbUrlArg.getKey(), dbUrlArg.getValue()));
     }
   }
 

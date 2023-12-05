@@ -6,12 +6,14 @@ import de.joergdev.mosy.api.model.Interface;
 import de.joergdev.mosy.api.model.MockData;
 import de.joergdev.mosy.api.model.MockProfile;
 import de.joergdev.mosy.api.model.PathParam;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response._interface.method.LoadMockDataResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import de.joergdev.mosy.backend.persistence.model.MockDataPathParam;
+import de.joergdev.mosy.backend.persistence.model.MockDataUrlArgument;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -75,6 +77,12 @@ public class LoadMockData extends AbstractBL<de.joergdev.mosy.api.model.Interfac
       for (MockDataPathParam dbPathParams : dbMockData.getPathParams())
       {
         apiMockData.getPathParams().add(new PathParam(dbPathParams.getKey(), dbPathParams.getValue()));
+      }
+
+      // url args
+      for (MockDataUrlArgument dbUrlArg : dbMockData.getUrlArguments())
+      {
+        apiMockData.getUrlArguments().add(new UrlArgument(dbUrlArg.getKey(), dbUrlArg.getValue()));
       }
 
       mockDataList.add(apiMockData);

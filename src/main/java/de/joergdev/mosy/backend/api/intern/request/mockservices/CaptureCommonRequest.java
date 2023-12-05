@@ -1,8 +1,11 @@
 package de.joergdev.mosy.backend.api.intern.request.mockservices;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.ws.rs.core.HttpHeaders;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.HttpMethod;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.shared.Utils;
 
 public class CaptureCommonRequest
@@ -15,6 +18,7 @@ public class CaptureCommonRequest
   private boolean routeOnly = false;
   private String routeAddition;
   private String absolutePath;
+  private final Collection<UrlArgument> urlArguments = new ArrayList<UrlArgument>();
 
   private String mockProfileNameCached = "______UNSET_______";
 
@@ -124,5 +128,10 @@ public class CaptureCommonRequest
   public void setHttpMethod(HttpMethod httpMethod)
   {
     this.httpMethod = httpMethod;
+  }
+
+  public Collection<UrlArgument> getUrlArguments()
+  {
+    return urlArguments;
   }
 }

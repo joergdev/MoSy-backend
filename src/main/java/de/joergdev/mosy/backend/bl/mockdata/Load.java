@@ -3,11 +3,13 @@ package de.joergdev.mosy.backend.bl.mockdata;
 import de.joergdev.mosy.api.model.InterfaceMethod;
 import de.joergdev.mosy.api.model.MockProfile;
 import de.joergdev.mosy.api.model.PathParam;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.persistence.model.MockData;
 import de.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import de.joergdev.mosy.backend.persistence.model.MockDataPathParam;
+import de.joergdev.mosy.backend.persistence.model.MockDataUrlArgument;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -53,6 +55,11 @@ public class Load extends AbstractBL<Integer, de.joergdev.mosy.api.response.mock
     for (MockDataPathParam dbPathParam : dbMockData.getPathParams())
     {
       apiMockData.getPathParams().add(new PathParam(dbPathParam.getKey(), dbPathParam.getValue()));
+    }
+
+    for (MockDataUrlArgument dbUrlArg : dbMockData.getUrlArguments())
+    {
+      apiMockData.getUrlArguments().add(new UrlArgument(dbUrlArg.getKey(), dbUrlArg.getValue()));
     }
   }
 

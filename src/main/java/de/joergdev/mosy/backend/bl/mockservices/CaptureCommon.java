@@ -36,6 +36,7 @@ import de.joergdev.mosy.backend.persistence.model.Interface;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.MockData;
 import de.joergdev.mosy.backend.persistence.model.MockDataPathParam;
+import de.joergdev.mosy.backend.persistence.model.MockDataUrlArgument;
 import de.joergdev.mosy.backend.persistence.model.MockProfile;
 import de.joergdev.mosy.backend.persistence.model.RecordConfig;
 import de.joergdev.mosy.backend.util.HttpRouting;
@@ -187,14 +188,15 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
         continue;
       }
 
-      if (Utils.isEmpty(dbMockData.getRequest()) && dbMockData.getPathParams().isEmpty())
+      if (Utils.isEmpty(dbMockData.getRequest()) && dbMockData.getPathParams().isEmpty()
+          && dbMockData.getUrlArguments().isEmpty())
       {
         dbMockDataMethodGlobal = dbMockData;
       }
       else
       {
         if (dataMatchesRequestContent(interfaceType, dbMockData.getRequest(),
-            getPathParamsMap(dbMockData.getPathParams())))
+            getPathParamsMap(dbMockData.getPathParams()), getUrlArgumentsMap(dbMockData.getUrlArguments())))
         {
           dbMockDataFound = dbMockData;
 
@@ -221,6 +223,18 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     }
 
     return mapPathParams;
+  }
+
+  private Map<String, String> getUrlArgumentsMap(List<MockDataUrlArgument> dbMockDataUrlArguments)
+  {
+    Map<String, String> mapUrlArguments = new HashMap<>();
+
+    for (MockDataUrlArgument dbUrlArg : dbMockDataUrlArguments)
+    {
+      mapUrlArguments.put(dbUrlArg.getKey(), dbUrlArg.getValue());
+    }
+
+    return mapUrlArguments;
   }
 
   private boolean isMockDataRelevant(MockData dbMockData, boolean useCommonMockdata)
@@ -336,13 +350,30 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
           if (idx1WildcardParam == idx2WildcardParam)
           {
-            // sort by length request
-            // the request with the longest string must be sorted on top because its the most restrictive
+            // sort by urlargs, the request with the most args must be sorted on top because its the most restrictive
+            int cntUrlArguments1 = Utils.nvlCollection(md1.getUrlArguments()).size();
+            int cntUrlArguments2 = Utils.nvlCollection(md2.getUrlArguments()).size();
 
-            if (Utils.nvl(md1.getRequest()).length() > Utils.nvl(md2.getRequest()).length())
+            if (cntUrlArguments1 == cntUrlArguments2)
+            {
+              // sort by length request
+              // the request with the longest string must be sorted on top because its the most restrictive
+
+              if (Utils.nvl(md1.getRequest()).length() > Utils.nvl(md2.getRequest()).length())
+              {
+                return -1;
+              }
+              // length1 <= length2
+              else
+              {
+                return 1;
+              }
+            }
+            else if (cntUrlArguments1 > cntUrlArguments2)
             {
               return -1;
             }
+            // cntUrlArguments1 < cntUrlArguments2
             else
             {
               return 1;
@@ -459,6 +490,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     apiRecord.setInterfaceMethod(new de.joergdev.mosy.api.model.InterfaceMethod());
     apiRecord.getInterfaceMethod().setInterfaceMethodId(dbMethod.getInterfaceMethodId());
     apiRecord.getPathParams().addAll(getRequestPathParams(interfaceType, dbMethod));
+    apiRecord.getUrlArguments().addAll(request.getUrlArguments());
     apiRecord.setRequestData(requestContent);
     apiRecord.setHttpReturnCode(mockResponseHttpCode);
     apiRecord.setResponse(mockResponse);
@@ -554,7 +586,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     for (RecordConfig rc : dbMethod.getRecordConfig())
     {
       if (Boolean.TRUE.equals(rc.getEnabled())
-          && dataMatchesRequestContent(interfaceType, rc.getRequestData(), null))
+          && dataMatchesRequestContent(interfaceType, rc.getRequestData(), null, null))
       {
         return true;
       }
@@ -564,7 +596,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
   }
 
   private boolean dataMatchesRequestContent(InterfaceType interfaceType, String needle,
-                                            Map<String, String> pathParams)
+                                            Map<String, String> pathParams, Map<String, String> urlArguments)
   {
     // first check if pathParams (not) match (if set)
     if (!Utils.nvlMap(pathParams).isEmpty())
@@ -583,6 +615,19 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       if (!servicePathPattern.matcher(request.getServicePathMethod()).matches())
       {
         return false;
+      }
+    }
+
+    // second check url arguments
+    if (!Utils.nvlMap(urlArguments).isEmpty())
+    {
+      for (Entry<String, String> urlArgEntry : urlArguments.entrySet())
+      {
+        if (request.getUrlArguments().stream().noneMatch(
+            ua -> ua.getKey().equals(urlArgEntry.getKey()) && ua.getValue().equals(urlArgEntry.getValue())))
+        {
+          return false;
+        }
       }
     }
 

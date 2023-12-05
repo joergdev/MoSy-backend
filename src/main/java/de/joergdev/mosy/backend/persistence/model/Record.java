@@ -47,6 +47,9 @@ public class Record
   @OneToMany(mappedBy = "record", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   private List<RecordPathParam> pathParams;
 
+  @OneToMany(mappedBy = "record", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<RecordUrlArgument> urlArguments;
+
   public Integer getRecordId()
   {
     return recordId;
@@ -125,5 +128,15 @@ public class Record
   public void setPathParams(List<RecordPathParam> pathParams)
   {
     this.pathParams = pathParams;
+  }
+
+  public List<RecordUrlArgument> getUrlArguments()
+  {
+    return urlArguments;
+  }
+
+  public void setUrlArguments(List<RecordUrlArgument> urlArguments)
+  {
+    this.urlArguments = urlArguments;
   }
 }

@@ -8,6 +8,7 @@ import de.joergdev.mosy.api.model.Interface;
 import de.joergdev.mosy.api.model.InterfaceType;
 import de.joergdev.mosy.api.model.MockData;
 import de.joergdev.mosy.api.model.PathParam;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.mockdata.SaveResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -18,6 +19,7 @@ import de.joergdev.mosy.backend.persistence.dao.MockProfileDao;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
 import de.joergdev.mosy.backend.persistence.model.MockDataPathParam;
+import de.joergdev.mosy.backend.persistence.model.MockDataUrlArgument;
 import de.joergdev.mosy.backend.persistence.model.MockProfile;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
@@ -84,6 +86,18 @@ public class Save extends AbstractBL<MockData, SaveResponse>
       leaveOn(pathParam.getValue().length() > MockDataPathParam.LENGTH_VALUE,
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("pathParam value"));
     }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      leaveOn(Utils.isEmpty(urlArg.getKey()) || Utils.isEmpty(urlArg.getValue()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
+
+      leaveOn(urlArg.getKey().length() > MockDataUrlArgument.LENGTH_KEY,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
+
+      leaveOn(urlArg.getValue().length() > MockDataUrlArgument.LENGTH_VALUE,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
+    }
   }
 
   @Override
@@ -121,7 +135,7 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     // transfer values
     ObjectUtils.copyValues(request, dbMockData, "interfaceMethod", "mockProfile", "created", "countCalls",
-        "mockProfiles", "pathParams");
+        "mockProfiles", "pathParams", "urlArguments");
     dbMockData.setInterfaceMethod(dbMethod);
 
     // save
@@ -131,8 +145,9 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     // save mockProfiles
     saveMockProfiles(dbMockProfiles);
 
-    // save pathParams
+    // save pathParams + urlArguments
     savePathParams();
+    saveUrlArguments();
   }
 
   private void setCommonIfNoMockProfile()
@@ -226,6 +241,36 @@ public class Save extends AbstractBL<MockData, SaveResponse>
       dbPathParam.setMockData(dbMockData);
 
       entityMgr.persist(dbPathParam);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
+  private void saveUrlArguments()
+  {
+    boolean dbChanged = false;
+
+    // delete all existing args
+    for (MockDataUrlArgument dbUrlArg : Utils.nvlCollection(dbMockData.getUrlArguments()))
+    {
+      entityMgr.remove(entityMgr.find(MockDataUrlArgument.class, dbUrlArg.getMockDataUrlArgumentId()));
+
+      dbChanged = true;
+    }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      MockDataUrlArgument dbUrlArg = new MockDataUrlArgument();
+      dbUrlArg.setKey(urlArg.getKey());
+      dbUrlArg.setValue(urlArg.getValue());
+      dbUrlArg.setMockData(dbMockData);
+
+      entityMgr.persist(dbUrlArg);
 
       dbChanged = true;
     }

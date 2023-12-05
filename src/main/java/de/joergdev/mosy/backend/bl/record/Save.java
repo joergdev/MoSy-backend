@@ -3,6 +3,7 @@ package de.joergdev.mosy.backend.bl.record;
 import java.time.LocalDateTime;
 import de.joergdev.mosy.api.model.PathParam;
 import de.joergdev.mosy.api.model.Record;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.record.SaveResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -12,6 +13,7 @@ import de.joergdev.mosy.backend.persistence.model.InterfaceType;
 import de.joergdev.mosy.backend.persistence.model.MockData;
 import de.joergdev.mosy.backend.persistence.model.RecordPathParam;
 import de.joergdev.mosy.backend.persistence.model.RecordSession;
+import de.joergdev.mosy.backend.persistence.model.RecordUrlArgument;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -59,7 +61,8 @@ public class Save extends AbstractBL<Record, SaveResponse>
     request.formatRequestResponse(BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbMethod));
 
     // transfer values
-    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created", "recordSession", "pathParams");
+    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created", "recordSession", "pathParams",
+        "urlArguments");
     dbRecord.setInterfaceMethod(dbMethod);
     dbRecord.setRecordSession(dbRecordSession);
 
@@ -69,8 +72,9 @@ public class Save extends AbstractBL<Record, SaveResponse>
 
     id = dbRecord.getRecordId();
 
-    // save path params
+    // save path params + url arguments
     savePathParams(dbRecord);
+    saveUrlArguments(dbRecord);
   }
 
   private void validateAfterLoad(InterfaceMethod dbMethod)
@@ -138,6 +142,36 @@ public class Save extends AbstractBL<Record, SaveResponse>
       dbPathParam.setRecord(dbRecord);
 
       entityMgr.persist(dbPathParam);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
+  private void saveUrlArguments(de.joergdev.mosy.backend.persistence.model.Record dbRecord)
+  {
+    boolean dbChanged = false;
+
+    // delete all existing params
+    for (RecordUrlArgument dbUrlArg : Utils.nvlCollection(dbRecord.getUrlArguments()))
+    {
+      entityMgr.remove(entityMgr.find(RecordUrlArgument.class, dbUrlArg.getRecordUrlArgumentId()));
+
+      dbChanged = true;
+    }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      RecordUrlArgument dbUrlArg = new RecordUrlArgument();
+      dbUrlArg.setKey(urlArg.getKey());
+      dbUrlArg.setValue(urlArg.getValue());
+      dbUrlArg.setRecord(dbRecord);
+
+      entityMgr.persist(dbUrlArg);
 
       dbChanged = true;
     }

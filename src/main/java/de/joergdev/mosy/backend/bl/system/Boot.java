@@ -153,8 +153,10 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     alterConstraintIfNecessary(dao, "MOCK_DATA_MOCK_PROFILE", "MOCK_PROFILE_ID");
 
     alterConstraintIfNecessary(dao, "MOCK_DATA_PATH_PARAM", "MOCK_DATA_ID");
+    alterConstraintIfNecessary(dao, "MOCK_DATA_URL_ARGUMENT", "MOCK_DATA_ID");
 
     alterConstraintIfNecessary(dao, "RECORD_PATH_PARAM", "RECORD_ID");
+    alterConstraintIfNecessary(dao, "RECORD_URL_ARGUMENT", "RECORD_ID");
 
     alterConstraintIfNecessary(dao, "INTERFACE_METHOD", "INTERFACE_ID");
     alterConstraintIfNecessary(dao, "RECORD_CONFIG", "INTERFACE_ID");
