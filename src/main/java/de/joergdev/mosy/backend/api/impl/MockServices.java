@@ -234,11 +234,6 @@ public class MockServices
           {
             if (headerVal != null)
             {
-              if ("Transfer-encoding".equals(headerKey) && headerVal.toString().contains("chunked"))
-              {
-                continue;
-              }
-
               responseBui.header(headerKey, headerVal);
             }
           }

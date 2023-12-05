@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -457,7 +458,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
     mockResponse = (String) response.getEntity();
     mockResponseHttpCode = response.getStatus();
-    mockResponseHeaders = response.getHeaders();
+    mockResponseHeaders = filterResponseHeaders(response.getHeaders());
 
     // if should be recorded then save
     if (recordRequestResponse(baseData, dbInterface, dbMethod, interfaceType))
@@ -747,5 +748,24 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       apiMethod.setMockInterface(apiInterface);
       response.setInterfaceMethod(apiMethod);
     }
+  }
+
+  private MultivaluedMap<String, Object> filterResponseHeaders(MultivaluedMap<String, Object> mockResponseHeadersTmp)
+  {
+    Iterator<Entry<String, List<Object>>> it = mockResponseHeadersTmp.entrySet().iterator();
+    while (it.hasNext())
+    {
+      Entry<String, List<Object>> e = it.next();
+
+      if ("Transfer-encoding".equals(e.getKey()))
+      {
+        if (e.getValue().remove("chunked") && e.getValue().isEmpty())
+        {
+          it.remove();
+        }
+      }
+    }
+
+    return mockResponseHeadersTmp;
   }
 }
