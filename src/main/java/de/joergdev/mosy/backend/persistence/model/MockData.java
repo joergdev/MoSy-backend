@@ -57,6 +57,9 @@ public class MockData
   @Column(name = "RESPONSE_HASH", nullable = false, columnDefinition = "INT(11) default 0")
   private Integer responseHash;
 
+  @Column(name = "DELAY", nullable = true)
+  private Long delay;
+
   @ManyToOne
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
@@ -242,5 +245,15 @@ public class MockData
   public void setUrlArguments(List<MockDataUrlArgument> urlArguments)
   {
     this.urlArguments = urlArguments;
+  }
+
+  public Long getDelay()
+  {
+    return delay;
+  }
+
+  public void setDelay(Long delay)
+  {
+    this.delay = delay;
   }
 }

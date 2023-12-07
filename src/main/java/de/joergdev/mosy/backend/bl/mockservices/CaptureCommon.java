@@ -149,6 +149,25 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       mockResponseHttpCode = dbMockDataFound.getHttpReturnCode();
 
       getDao(MockDataDAO.class).increaseCountCalls(dbMockDataFound.getMockDataId());
+
+      sleepOnDelaySet(dbMockDataFound);
+    }
+  }
+
+  private void sleepOnDelaySet(MockData dbMockDataFound)
+  {
+    if (dbMockDataFound.getDelay() != null)
+    {
+      try
+      {
+        Thread.sleep(dbMockDataFound.getDelay());
+      }
+      catch (InterruptedException ex)
+      {
+        Thread.currentThread().interrupt();
+
+        throw new IllegalStateException(ex);
+      }
     }
   }
 
