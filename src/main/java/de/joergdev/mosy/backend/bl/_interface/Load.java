@@ -1,5 +1,6 @@
 package de.joergdev.mosy.backend.bl._interface;
 
+import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.api.model.InterfaceType;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response._interface.LoadResponse;
@@ -59,7 +60,13 @@ public class Load extends AbstractBL<Integer, LoadResponse>
       apiMethod.setMockInterface(apiInterface);
       apiInterface.getMethods().add(apiMethod);
 
-      ObjectUtils.copyValues(dbMethod, apiMethod, "mockInterface");
+      ObjectUtils.copyValues(dbMethod, apiMethod, "mockInterface", "httpMethod");
+
+      String httpMethod = dbMethod.getHttpMethod();
+      if (!Utils.isEmpty(httpMethod))
+      {
+        apiMethod.setHttpMethod(HttpMethod.valueOf(httpMethod));
+      }
 
       apiMethod.setRecord(getDao(InterfaceMethodDAO.class).isRecordEnabled(dbMethod.getInterfaceMethodId()));
     }

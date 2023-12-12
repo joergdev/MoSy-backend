@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import org.xml.sax.SAXParseException;
 import de.joergdev.mosy.api.model.Interface;
+import de.joergdev.mosy.api.model.InterfaceType;
 import de.joergdev.mosy.api.model.MockData;
+import de.joergdev.mosy.api.model.PathParam;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.mockdata.SaveResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -15,6 +18,8 @@ import de.joergdev.mosy.backend.persistence.dao.MockDataDAO;
 import de.joergdev.mosy.backend.persistence.dao.MockProfileDao;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.MockDataMockProfile;
+import de.joergdev.mosy.backend.persistence.model.MockDataPathParam;
+import de.joergdev.mosy.backend.persistence.model.MockDataUrlArgument;
 import de.joergdev.mosy.backend.persistence.model.MockProfile;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
@@ -54,8 +59,8 @@ public class Save extends AbstractBL<MockData, SaveResponse>
                 .length() > de.joergdev.mosy.backend.persistence.model.MockData.LENGTH_REQUEST,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
-    leaveOn(Utils.isEmpty(request.getResponse())
-            || request.getResponse()
+    leaveOn(!Utils.isEmpty(request.getResponse())
+            && request.getResponse()
                 .length() > de.joergdev.mosy.backend.persistence.model.MockData.LENGTH_RESPONSE,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response"));
 
@@ -68,6 +73,30 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
       leaveOn(apiMockProfileID == null && Utils.isEmpty(apiMockProfile.getName()),
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockProfileID / name"));
+    }
+
+    for (PathParam pathParam : request.getPathParams())
+    {
+      leaveOn(Utils.isEmpty(pathParam.getKey()) || Utils.isEmpty(pathParam.getValue()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("pathParam"));
+
+      leaveOn(pathParam.getKey().length() > MockDataPathParam.LENGTH_KEY,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("pathParam key"));
+
+      leaveOn(pathParam.getValue().length() > MockDataPathParam.LENGTH_VALUE,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("pathParam value"));
+    }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      leaveOn(Utils.isEmpty(urlArg.getKey()) || Utils.isEmpty(urlArg.getValue()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
+
+      leaveOn(urlArg.getKey().length() > MockDataUrlArgument.LENGTH_KEY,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
+
+      leaveOn(urlArg.getValue().length() > MockDataUrlArgument.LENGTH_VALUE,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("urlArgument"));
     }
   }
 
@@ -83,6 +112,11 @@ public class Save extends AbstractBL<MockData, SaveResponse>
             && !dbMethod.getInterfaceMethodId()
                 .equals(dbMockData.getInterfaceMethod().getInterfaceMethodId()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("mockdata and interfaceMethod wrong"));
+
+    // check if response set (except rest)
+    leaveOn(!InterfaceType.REST.id.equals(BlUtils.getInterfaceTypeId(apiInterfaceMethodRequest, dbMethod))
+            && Utils.isEmpty(request.getResponse()),
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response"));
 
     // get MockProfiles from db
     Map<Integer, MockProfile> dbMockProfiles = getMockProfilesFromRequest();
@@ -101,7 +135,7 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     // transfer values
     ObjectUtils.copyValues(request, dbMockData, "interfaceMethod", "mockProfile", "created", "countCalls",
-        "mockProfiles");
+        "mockProfiles", "pathParams", "urlArguments");
     dbMockData.setInterfaceMethod(dbMethod);
 
     // save
@@ -110,6 +144,10 @@ public class Save extends AbstractBL<MockData, SaveResponse>
 
     // save mockProfiles
     saveMockProfiles(dbMockProfiles);
+
+    // save pathParams + urlArguments
+    savePathParams();
+    saveUrlArguments();
   }
 
   private void setCommonIfNoMockProfile()
@@ -183,6 +221,66 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     }
   }
 
+  private void savePathParams()
+  {
+    boolean dbChanged = false;
+
+    // delete all existing params
+    for (MockDataPathParam dbPathParam : Utils.nvlCollection(dbMockData.getPathParams()))
+    {
+      entityMgr.remove(entityMgr.find(MockDataPathParam.class, dbPathParam.getMockDataPathParamId()));
+
+      dbChanged = true;
+    }
+
+    for (PathParam pathParam : request.getPathParams())
+    {
+      MockDataPathParam dbPathParam = new MockDataPathParam();
+      dbPathParam.setKey(pathParam.getKey());
+      dbPathParam.setValue(pathParam.getValue());
+      dbPathParam.setMockData(dbMockData);
+
+      entityMgr.persist(dbPathParam);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
+  private void saveUrlArguments()
+  {
+    boolean dbChanged = false;
+
+    // delete all existing args
+    for (MockDataUrlArgument dbUrlArg : Utils.nvlCollection(dbMockData.getUrlArguments()))
+    {
+      entityMgr.remove(entityMgr.find(MockDataUrlArgument.class, dbUrlArg.getMockDataUrlArgumentId()));
+
+      dbChanged = true;
+    }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      MockDataUrlArgument dbUrlArg = new MockDataUrlArgument();
+      dbUrlArg.setKey(urlArg.getKey());
+      dbUrlArg.setValue(urlArg.getValue());
+      dbUrlArg.setMockData(dbMockData);
+
+      entityMgr.persist(dbUrlArg);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
   private Map<Integer, MockProfile> getMockProfilesFromRequest()
   {
     Map<Integer, MockProfile> dbMockProfiles = new HashMap<>();
@@ -224,8 +322,9 @@ public class Save extends AbstractBL<MockData, SaveResponse>
     // Name
     else
     {
-      InterfaceMethod dbInterfaceMethod = PersistenceUtil.getDbInterfaceMethodByServicePaths(this,
-          apiInterfaceRequest.getName(), apiInterfaceMethodRequest.getName());
+      InterfaceMethod dbInterfaceMethod = PersistenceUtil.getDbInterfaceMethodByNames(this,
+          apiInterfaceRequest.getName(), apiInterfaceMethodRequest.getName(), false,
+          apiInterfaceMethodRequest.getHttpMethod());
 
       apiInterfaceMethodRequest.setInterfaceMethodId(dbInterfaceMethod.getInterfaceMethodId());
       apiInterfaceRequest.setInterfaceId(dbInterfaceMethod.getMockInterface().getInterfaceId());

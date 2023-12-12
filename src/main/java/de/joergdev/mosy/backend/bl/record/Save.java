@@ -1,7 +1,9 @@
 package de.joergdev.mosy.backend.bl.record;
 
 import java.time.LocalDateTime;
+import de.joergdev.mosy.api.model.PathParam;
 import de.joergdev.mosy.api.model.Record;
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.record.SaveResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
@@ -9,7 +11,9 @@ import de.joergdev.mosy.backend.bl.utils.BlUtils;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;
 import de.joergdev.mosy.backend.persistence.model.InterfaceType;
 import de.joergdev.mosy.backend.persistence.model.MockData;
+import de.joergdev.mosy.backend.persistence.model.RecordPathParam;
 import de.joergdev.mosy.backend.persistence.model.RecordSession;
+import de.joergdev.mosy.backend.persistence.model.RecordUrlArgument;
 import de.joergdev.mosy.shared.ObjectUtils;
 import de.joergdev.mosy.shared.Utils;
 
@@ -26,12 +30,13 @@ public class Save extends AbstractBL<Record, SaveResponse>
         request.getInterfaceMethod() == null || request.getInterfaceMethod().getInterfaceMethodId() == null,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("interface method"));
 
-    leaveOn(Utils.isEmpty(request.getRequestData())
-            || request.getRequestData().length() > MockData.LENGTH_REQUEST,
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request data"));
+    leaveOn(!Utils.isEmpty(request.getRequestData())
+            && request.getRequestData().length() > MockData.LENGTH_REQUEST,
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request data length"));
 
-    leaveOn(Utils.isEmpty(request.getResponse()) || request.getResponse().length() > MockData.LENGTH_RESPONSE,
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response data"));
+    leaveOn(
+        !Utils.isEmpty(request.getResponse()) && request.getResponse().length() > MockData.LENGTH_RESPONSE,
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response data length"));
 
     leaveOn(request.getRecordSession() != null && request.getRecordSession().getRecordSessionID() == null,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("recordSession"));
@@ -40,39 +45,24 @@ public class Save extends AbstractBL<Record, SaveResponse>
   @Override
   protected void execute()
   {
-    de.joergdev.mosy.backend.persistence.model.Record dbRecord = null;
-
-    if (request.getRecordId() != null)
-    {
-      dbRecord = findDbEntity(de.joergdev.mosy.backend.persistence.model.Record.class,
-          request.getRecordId(), "record with id " + request.getRecordId());
-    }
-    else
-    {
-      dbRecord = new de.joergdev.mosy.backend.persistence.model.Record();
-      dbRecord.setCreated(LocalDateTime.now());
-    }
+    de.joergdev.mosy.backend.persistence.model.Record dbRecord = getDbRecord();
 
     InterfaceMethod dbMethod = findDbEntity(InterfaceMethod.class,
         request.getInterfaceMethod().getInterfaceMethodId(),
         "interface method with id " + request.getInterfaceMethod().getInterfaceMethodId());
 
-    // if not intern -> only custom allowed
-    checkInterfaceType(dbMethod);
+    // some validations can not be done until data for method is load, do them now
+    validateAfterLoad(dbMethod);
 
     // RecordSession
-    RecordSession dbRecordSession = null;
-    if (request.getRecordSession() != null)
-    {
-      dbRecordSession = findDbEntity(RecordSession.class, request.getRecordSession().getRecordSessionID(),
-          "recordSession with id: " + request.getRecordSession().getRecordSessionID());
-    }
+    RecordSession dbRecordSession = getDbRecordSession();
 
     // format request/response
     request.formatRequestResponse(BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbMethod));
 
     // transfer values
-    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created", "recordSession");
+    ObjectUtils.copyValues(request, dbRecord, "interfaceMethod", "created", "recordSession", "pathParams",
+        "urlArguments");
     dbRecord.setInterfaceMethod(dbMethod);
     dbRecord.setRecordSession(dbRecordSession);
 
@@ -81,6 +71,115 @@ public class Save extends AbstractBL<Record, SaveResponse>
     entityMgr.flush();
 
     id = dbRecord.getRecordId();
+
+    // save path params + url arguments
+    savePathParams(dbRecord);
+    saveUrlArguments(dbRecord);
+  }
+
+  private void validateAfterLoad(InterfaceMethod dbMethod)
+  {
+    // if not intern -> only custom allowed
+    checkInterfaceType(dbMethod);
+
+    // check if request and response set (except rest)
+    if (!de.joergdev.mosy.api.model.InterfaceType.REST.id
+        .equals(BlUtils.getInterfaceTypeId(request.getInterfaceMethod(), dbMethod)))
+    {
+      leaveOn(Utils.isEmpty(request.getRequestData()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request data"));
+      leaveOn(Utils.isEmpty(request.getResponse()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("response"));
+    }
+  }
+
+  private RecordSession getDbRecordSession()
+  {
+    if (request.getRecordSession() != null)
+    {
+      return findDbEntity(RecordSession.class, request.getRecordSession().getRecordSessionID(),
+          "recordSession with id: " + request.getRecordSession().getRecordSessionID());
+    }
+
+    return null;
+  }
+
+  private de.joergdev.mosy.backend.persistence.model.Record getDbRecord()
+  {
+    de.joergdev.mosy.backend.persistence.model.Record dbRecord = null;
+
+    if (request.getRecordId() != null)
+    {
+      dbRecord = findDbEntity(de.joergdev.mosy.backend.persistence.model.Record.class, request.getRecordId(),
+          "record with id " + request.getRecordId());
+    }
+    else
+    {
+      dbRecord = new de.joergdev.mosy.backend.persistence.model.Record();
+      dbRecord.setCreated(LocalDateTime.now());
+    }
+
+    return dbRecord;
+  }
+
+  private void savePathParams(de.joergdev.mosy.backend.persistence.model.Record dbRecord)
+  {
+    boolean dbChanged = false;
+
+    // delete all existing params
+    for (RecordPathParam dbPathParam : Utils.nvlCollection(dbRecord.getPathParams()))
+    {
+      entityMgr.remove(entityMgr.find(RecordPathParam.class, dbPathParam.getRecordPathParamId()));
+
+      dbChanged = true;
+    }
+
+    for (PathParam pathParam : request.getPathParams())
+    {
+      RecordPathParam dbPathParam = new RecordPathParam();
+      dbPathParam.setKey(pathParam.getKey());
+      dbPathParam.setValue(pathParam.getValue());
+      dbPathParam.setRecord(dbRecord);
+
+      entityMgr.persist(dbPathParam);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
+  }
+
+  private void saveUrlArguments(de.joergdev.mosy.backend.persistence.model.Record dbRecord)
+  {
+    boolean dbChanged = false;
+
+    // delete all existing params
+    for (RecordUrlArgument dbUrlArg : Utils.nvlCollection(dbRecord.getUrlArguments()))
+    {
+      entityMgr.remove(entityMgr.find(RecordUrlArgument.class, dbUrlArg.getRecordUrlArgumentId()));
+
+      dbChanged = true;
+    }
+
+    for (UrlArgument urlArg : request.getUrlArguments())
+    {
+      RecordUrlArgument dbUrlArg = new RecordUrlArgument();
+      dbUrlArg.setKey(urlArg.getKey());
+      dbUrlArg.setValue(urlArg.getValue());
+      dbUrlArg.setRecord(dbRecord);
+
+      entityMgr.persist(dbUrlArg);
+
+      dbChanged = true;
+    }
+
+    if (dbChanged)
+    {
+      entityMgr.flush();
+    }
   }
 
   private void checkInterfaceType(InterfaceMethod dbMethod)
@@ -89,9 +188,7 @@ public class Save extends AbstractBL<Record, SaveResponse>
     {
       InterfaceType dbInterfaceType = dbMethod.getMockInterface().getType();
 
-      leaveOn(
-          !de.joergdev.mosy.api.model.InterfaceType
-              .isCustomType(dbInterfaceType.getInterfaceTypeId()),
+      leaveOn(!de.joergdev.mosy.api.model.InterfaceType.isCustomType(dbInterfaceType.getInterfaceTypeId()),
           ResponseCode.OPERATION_NOT_POSSIBLE
               .withAddtitionalInfo("record can only be saved for custom interfaces"));
     }

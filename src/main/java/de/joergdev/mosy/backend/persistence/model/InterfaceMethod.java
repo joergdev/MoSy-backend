@@ -28,6 +28,12 @@ public class InterfaceMethod
   @Column(name = "SERVICE_PATH", length = Interface.LENGTH_SERVICE_PATH)
   private String servicePath;
 
+  @Column(name = "SERVICE_PATH_INTERN", length = Interface.LENGTH_SERVICE_PATH)
+  private String servicePathIntern;
+
+  @Column(name = "HTTP_METHOD", length = 6)
+  private String httpMethod;
+
   @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
   private Boolean routingOnNoMockData;
 
@@ -161,5 +167,25 @@ public class InterfaceMethod
   public void setMockActive(Boolean mockActive)
   {
     this.mockActive = mockActive;
+  }
+
+  public String getHttpMethod()
+  {
+    return httpMethod;
+  }
+
+  public void setHttpMethod(String httpMethod)
+  {
+    this.httpMethod = httpMethod;
+  }
+
+  public String getServicePathIntern()
+  {
+    return servicePathIntern;
+  }
+
+  public void setServicePathIntern(String servicePathIntern)
+  {
+    this.servicePathIntern = servicePathIntern;
   }
 }

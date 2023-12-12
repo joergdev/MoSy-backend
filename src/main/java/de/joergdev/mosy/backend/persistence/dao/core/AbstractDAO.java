@@ -21,12 +21,17 @@ public class AbstractDAO
 
   public <T> T getSingleResult(Query q)
   {
-    @SuppressWarnings("unchecked")
-    List<T> result = q.getResultList();
+    List<T> result = getResultList(q);
 
     return Utils.isCollectionEmpty(result)
         ? null
         : result.get(0);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> List<T> getResultList(Query q)
+  {
+    return q.getResultList();
   }
 
   public int executeUpdate(Query q)

@@ -209,4 +209,38 @@ public class MockServicesUtil
 
     return true;
   }
+
+  /**
+   * <pre>
+   * Replaces all occurrences of "{whatever}" by "%".
+   * 
+   * Example:
+   * 
+   * test/{id}/a/{hello} => test/%/a/%
+   * 
+   * </pre>
+   * 
+   * @param url
+   * @return String
+   */
+  public static String getUrlWithReplacedDynVars(String url)
+  {
+    if (url != null)
+    {
+      int idxBracket = url.indexOf("{");
+
+      while (idxBracket >= 0)
+      {
+        url = url.substring(0, idxBracket) //
+              + "%" //
+              + url.substring(url.indexOf("}"));
+
+        url = url.replaceFirst("}", "");
+
+        idxBracket = url.indexOf("{");
+      }
+    }
+
+    return url;
+  }
 }

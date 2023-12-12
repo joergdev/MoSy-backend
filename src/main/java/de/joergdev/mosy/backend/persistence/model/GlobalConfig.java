@@ -29,6 +29,9 @@ public class GlobalConfig
   @Column(name = "TTL_MOCK_PROFILE")
   private Integer ttlMockProfile;
 
+  @Column(name = "SCHEMA_VERSION", length = 10)
+  private String schemaVersion;
+
   public Boolean getMockActiveOnStartup()
   {
     return mockActiveOnStartup;
@@ -99,5 +102,15 @@ public class GlobalConfig
   public void setTtlMockProfile(Integer ttlMockProfile)
   {
     this.ttlMockProfile = ttlMockProfile;
+  }
+
+  public String getSchemaVersion()
+  {
+    return schemaVersion;
+  }
+
+  public void setSchemaVersion(String schemaVersion)
+  {
+    this.schemaVersion = schemaVersion;
   }
 }

@@ -161,4 +161,11 @@ public class MockServicesUtilTest
     assertTrue(MockServicesUtil.xmlContainsXml(buiStack.toString(), buiNeedle.toString()));
     assertTrue(MockServicesUtil.xmlContainsXml(buiStack.toString(), buiNeedle2.toString()));
   }
+
+  @Test
+  public void testGetUrlWithReplacedDynVars()
+  {
+    assertEquals("test/%/a/%", MockServicesUtil.getUrlWithReplacedDynVars("test/{id}/a/{hello}"));
+    assertEquals("test/%/a/%/ua", MockServicesUtil.getUrlWithReplacedDynVars("test/{id}/a/{hello}/ua"));
+  }
 }

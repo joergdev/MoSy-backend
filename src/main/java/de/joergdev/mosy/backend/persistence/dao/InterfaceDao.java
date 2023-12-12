@@ -31,28 +31,36 @@ public class InterfaceDao extends AbstractDAO
     executeUpdate(q);
   }
 
-  public Interface getByServicePath(String servicePath)
+  public Interface getByServicePath(String servicePath, boolean servicePathStartsWith)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
-    return getBySearchParams(null, servicePath, null);
+    return getBySearchParams(null, servicePath, servicePathStartsWith, null);
   }
 
-  public boolean existsByServicePath(String servicePath, Integer exceptID)
+  public Interface getByName(String name)
+  {
+    Objects.requireNonNull(name, "name");
+
+    return getBySearchParams(name, null, false, null);
+  }
+
+  public boolean existsByServicePath(String servicePath, boolean servicePathStartsWith, Integer exceptID)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
-    return getBySearchParams(null, servicePath, exceptID) != null;
+    return getBySearchParams(null, servicePath, servicePathStartsWith, exceptID) != null;
   }
 
   public boolean existsByName(String name, Integer exceptID)
   {
     Objects.requireNonNull(name, "name");
 
-    return getBySearchParams(name, null, exceptID) != null;
+    return getBySearchParams(name, null, false, exceptID) != null;
   }
 
-  public Interface getBySearchParams(String name, String servicePath, Integer exceptID)
+  public Interface getBySearchParams(String name, String servicePath, boolean servicePathStartsWith,
+                                     Integer exceptID)
   {
     if (name == null && servicePath == null)
     {
@@ -81,7 +89,16 @@ public class InterfaceDao extends AbstractDAO
         sql.append(" and ");
       }
 
-      sql.append(" SERVICE_PATH = :svc_path ");
+      if (servicePathStartsWith)
+      {
+        // for example: "http://restservice/cars/1/wheels like http://restservice/cars%"
+        sql.append(" (:svc_path like SERVICE_PATH || '%' or SERVICE_PATH || '%' like :svc_path) ");
+      }
+      else
+      {
+        sql.append(" SERVICE_PATH = :svc_path ");
+      }
+
       params.put("svc_path", servicePath);
 
       needsAnd = true;

@@ -1,13 +1,17 @@
 package de.joergdev.mosy.backend.persistence.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -23,10 +27,14 @@ public class Record
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
 
-  @Column(name = "REQUEST_DATA", length = MockData.LENGTH_REQUEST, nullable = false)
+  @Column(name = "REQUEST_DATA", length = MockData.LENGTH_REQUEST)
   private String requestData;
 
-  @Column(name = "RESPONSE", length = MockData.LENGTH_RESPONSE, nullable = false)
+  /** REST */
+  @Column(name = "HTTP_RETURN_CODE", nullable = true, columnDefinition = "INT(4) default null")
+  private Integer httpReturnCode;
+
+  @Column(name = "RESPONSE", length = MockData.LENGTH_RESPONSE)
   private String response;
 
   @Column(name = "CREATED", updatable = false)
@@ -35,6 +43,12 @@ public class Record
   @ManyToOne
   @JoinColumn(name = "RECORD_SESSION_ID")
   private RecordSession recordSession;
+
+  @OneToMany(mappedBy = "record", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<RecordPathParam> pathParams;
+
+  @OneToMany(mappedBy = "record", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+  private List<RecordUrlArgument> urlArguments;
 
   public Integer getRecordId()
   {
@@ -94,5 +108,35 @@ public class Record
   public void setRecordSession(RecordSession recordSession)
   {
     this.recordSession = recordSession;
+  }
+
+  public Integer getHttpReturnCode()
+  {
+    return httpReturnCode;
+  }
+
+  public void setHttpReturnCode(Integer httpReturnCode)
+  {
+    this.httpReturnCode = httpReturnCode;
+  }
+
+  public List<RecordPathParam> getPathParams()
+  {
+    return pathParams;
+  }
+
+  public void setPathParams(List<RecordPathParam> pathParams)
+  {
+    this.pathParams = pathParams;
+  }
+
+  public List<RecordUrlArgument> getUrlArguments()
+  {
+    return urlArguments;
+  }
+
+  public void setUrlArguments(List<RecordUrlArgument> urlArguments)
+  {
+    this.urlArguments = urlArguments;
   }
 }
