@@ -10,7 +10,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import de.joergdev.mosy.api.APIConstants;
@@ -48,7 +50,7 @@ public class HttpRouting
       else
       {
         // Transfer header data
-        String charset = transferHeaderDataAndGetCharsetIfSet(headerMap, httpConn);
+        transferHeaderData(headerMap, httpConn);
 
         byte[] bytesRequest = null;
 
@@ -60,7 +62,7 @@ public class HttpRouting
           httpConn.setDoInput(true);
 
           outputStreamRequest = new ByteArrayOutputStream();
-          outputStreamRequest.write(request.getBytes(getCharset(charset)));
+          outputStreamRequest.write(request.getBytes(getCharset(getCharsetFromHeaders(headerMap))));
           bytesRequest = outputStreamRequest.toByteArray();
 
           // Write the content of the request to the outputstream of the HTTP Connection
@@ -81,7 +83,8 @@ public class HttpRouting
         inputStreamResponse = httpConn.getErrorStream();
       }
 
-      inputStreamReaderResponse = new InputStreamReader(inputStreamResponse);
+      inputStreamReaderResponse = new InputStreamReader(inputStreamResponse,
+          getCharset(getCharsetFromHeaders(httpConn.getHeaderFields())));
       bufReaderResponse = new BufferedReader(inputStreamReaderResponse);
 
       // Write the message response to a StringBuilder
@@ -138,11 +141,8 @@ public class HttpRouting
     return responseBui.build();
   }
 
-  private static String transferHeaderDataAndGetCharsetIfSet(MultivaluedMap<String, String> headerMap,
-                                                             HttpURLConnection httpConn)
+  private static void transferHeaderData(MultivaluedMap<String, String> headerMap, HttpURLConnection httpConn)
   {
-    String charset = null;
-
     for (String headerKey : headerMap.keySet())
     {
       if (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey)
@@ -162,16 +162,72 @@ public class HttpRouting
         for (String headerValue : headerValues)
         {
           httpConn.addRequestProperty(headerKey, headerValue);
+        }
+      }
+    }
+  }
 
-          if ("charset".equalsIgnoreCase(headerKey))
+  static String getCharsetFromHeaders(Map<String, ? extends Object> headers)
+  {
+    for (String headerKey : headers.keySet())
+    {
+      if ("charset".equalsIgnoreCase(headerKey))
+      {
+        Object value = headers.get(headerKey);
+
+        if (value instanceof String)
+        {
+          return (String) value;
+        }
+        else if (value instanceof Collection)
+        {
+          for (Object valueElement : (Collection<?>) value)
           {
-            charset = headerValue;
+            if (valueElement instanceof String)
+            {
+              return (String) valueElement;
+            }
+          }
+        }
+      }
+      // Content-Type=[text/xml;charset=UTF-8]}
+      else if ("Content-Type".equalsIgnoreCase(headerKey))
+      {
+        Object value = headers.get(headerKey);
+        String valueStr = null;
+
+        if (value instanceof String)
+        {
+          valueStr = (String) value;
+        }
+        else if (value instanceof Collection)
+        {
+          for (Object valueElement : (Collection<?>) value)
+          {
+            if (valueElement instanceof String)
+            {
+              valueStr = (String) valueElement;
+            }
+          }
+        }
+
+        if (!Utils.isEmpty(valueStr))
+        {
+          for (String valuePart : valueStr.split(";"))
+          {
+            valuePart = valuePart.replace("[", "").replace("]", "");
+            valuePart = valuePart.trim();
+
+            if (valuePart.startsWith("charset="))
+            {
+              return valuePart.split("=")[1];
+            }
           }
         }
       }
     }
 
-    return charset;
+    return null;
   }
 
   private static Charset getCharset(String charset)
