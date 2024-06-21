@@ -26,12 +26,10 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
     InterfaceMethod interfaceMethod = request.getInterfaceMethod();
     if (interfaceMethod != null)
     {
-      leaveOn(interfaceMethod.getInterfaceMethodId() == null
-              || !Utils.isPositive(interfaceMethod.getInterfaceMethodId()),
+      leaveOn(interfaceMethod.getInterfaceMethodId() == null || !Utils.isPositive(interfaceMethod.getInterfaceMethodId()),
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("interface method id"));
 
-      leaveOn(interfaceMethod.getMockInterface() != null
-              && interfaceMethod.getMockInterface().getInterfaceId() != null
+      leaveOn(interfaceMethod.getMockInterface() != null && interfaceMethod.getMockInterface().getInterfaceId() != null
               && !Utils.isPositive(interfaceMethod.getMockInterface().getInterfaceId()),
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("interfaceId"));
 
@@ -39,8 +37,7 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
           ResponseCode.OPERATION_NOT_POSSIBLE.withAddtitionalInfo("load by method, filtering not supported"));
     }
 
-    leaveOn(request.getLoadCount() != null && request.getLoadCount() <= 0,
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("loadCount"));
+    leaveOn(request.getLoadCount() != null && request.getLoadCount() <= 0, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("loadCount"));
 
     leaveOn(request.getLastLoadedId() != null && !Utils.isPositive(request.getLastLoadedId()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("lastLoadedId"));
@@ -56,10 +53,8 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
 
     if (request.getInterfaceMethod() != null)
     {
-      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = findDbEntity(
-          de.joergdev.mosy.backend.persistence.model.InterfaceMethod.class,
-          request.getInterfaceMethod().getInterfaceMethodId(),
-          "interface method with id " + request.getInterfaceMethod().getInterfaceMethodId());
+      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = findDbEntity(de.joergdev.mosy.backend.persistence.model.InterfaceMethod.class,
+          request.getInterfaceMethod().getInterfaceMethodId(), "interface method with id " + request.getInterfaceMethod().getInterfaceMethodId());
 
       checkInterface(dbMethod);
 
@@ -67,21 +62,18 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
     }
     else
     {
-      dbRecords = getDao(RecordDAO.class).getAll(request.getLoadCount(), request.getLastLoadedId(),
-          request.getRecordSessionID());
+      dbRecords = getDao(RecordDAO.class).getAll(request.getLoadCount(), request.getLastLoadedId(), request.getRecordSessionID());
     }
 
     for (de.joergdev.mosy.backend.persistence.model.Record dbRecord : Utils.nvlCollection(dbRecords))
     {
       Record apiRecord = new Record();
 
-      ObjectUtils.copyValues(dbRecord, apiRecord, "requestData", "response", "created", "interfaceMethod",
-          "recordSession");
+      ObjectUtils.copyValues(dbRecord, apiRecord, "requestData", "response", "created", "interfaceMethod", "recordSession");
       apiRecord.setCreatedAsLdt(dbRecord.getCreated());
 
       // Method / interface
-      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = dbRecord
-          .getInterfaceMethod();
+      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = dbRecord.getInterfaceMethod();
       de.joergdev.mosy.backend.persistence.model.Interface dbInterface = dbMethod.getMockInterface();
 
       InterfaceMethod apiMethod = new InterfaceMethod();
@@ -92,7 +84,7 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
       apiInterface.setInterfaceId(dbInterface.getInterfaceId());
       apiInterface.setName(dbInterface.getName());
 
-      apiMethod.setMockInterface(apiInterface);
+      apiMethod.setMockInterfaceData(apiInterface);
 
       apiRecord.setInterfaceMethod(apiMethod);
 
@@ -104,7 +96,7 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
         RecordSession apiRecordSession = new RecordSession();
         apiRecordSession.setRecordSessionID(dbRecord.getRecordSession().getRecordSessionID());
         apiRecordSession.setCreatedAsLdt(dbRecord.getRecordSession().getCreated());
-
+        
         apiRecord.setRecordSession(apiRecordSession);
       }
     }
@@ -117,11 +109,8 @@ public class LoadAll extends AbstractBL<LoadAllRequest, LoadAllResponse>
     {
       Integer interfaceId = apiInterface.getInterfaceId();
 
-      leaveOn(interfaceId != null && !interfaceId.equals(dbMethod.getMockInterface().getInterfaceId()),
-          ResponseCode.INVALID_INPUT_PARAMS
-              .withAddtitionalInfo(
-                  "interface method with id " + request.getInterfaceMethod()
-                      .getInterfaceMethodId() + " not exisiting for interface with id " + interfaceId));
+      leaveOn(interfaceId != null && !interfaceId.equals(dbMethod.getMockInterface().getInterfaceId()), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo(
+          "interface method with id " + request.getInterfaceMethod().getInterfaceMethodId() + " not exisiting for interface with id " + interfaceId));
     }
   }
 

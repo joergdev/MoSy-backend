@@ -21,15 +21,14 @@ public class Load extends AbstractBL<Integer, LoadResponse>
   @Override
   protected void validateInput()
   {
-    leaveOn(request == null || !Utils.isPositive(request),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("id"));
+    leaveOn(request == null || !Utils.isPositive(request), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("id"));
   }
 
   @Override
   protected void execute()
   {
-    de.joergdev.mosy.backend.persistence.model.Record dbRecord = findDbEntity(
-        de.joergdev.mosy.backend.persistence.model.Record.class, request, "record with id " + request);
+    de.joergdev.mosy.backend.persistence.model.Record dbRecord = findDbEntity(de.joergdev.mosy.backend.persistence.model.Record.class, request,
+        "record with id " + request);
 
     ObjectUtils.copyValues(dbRecord, apiRecord, "created", "interfaceMethod", "recordSession", "pathParams");
     apiRecord.setCreatedAsLdt(dbRecord.getCreated());
@@ -46,7 +45,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     apiInterface.setInterfaceId(dbInterface.getInterfaceId());
     apiInterface.setName(dbInterface.getName());
 
-    apiMethod.setMockInterface(apiInterface);
+    apiMethod.setMockInterfaceData(apiInterface);
 
     apiRecord.setInterfaceMethod(apiMethod);
 

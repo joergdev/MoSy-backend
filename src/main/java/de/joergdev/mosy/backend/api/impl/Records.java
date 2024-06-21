@@ -17,6 +17,7 @@ import de.joergdev.mosy.api.response.record.SaveResponse;
 import de.joergdev.mosy.backend.api.APIUtils;
 import de.joergdev.mosy.backend.api.intern.request.record.LoadAllRequest;
 import de.joergdev.mosy.backend.bl.record.Delete;
+import de.joergdev.mosy.backend.bl.record.DeleteAll;
 import de.joergdev.mosy.backend.bl.record.Load;
 import de.joergdev.mosy.backend.bl.record.LoadAll;
 import de.joergdev.mosy.backend.bl.record.Save;
@@ -25,10 +26,8 @@ import de.joergdev.mosy.backend.bl.record.Save;
 public class Records
 {
   @GET
-  public Response loadAll(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                          @QueryParam("load_count") Integer loadCount,
-                          @QueryParam("last_loaded_id") Integer lastLoadedId,
-                          @QueryParam("record_session_id") Integer recordSessionID)
+  public Response loadAll(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, @QueryParam("load_count") Integer loadCount,
+                          @QueryParam("last_loaded_id") Integer lastLoadedId, @QueryParam("record_session_id") Integer recordSessionID)
   {
     LoadAllRequest request = new LoadAllRequest();
     request.setLoadCount(loadCount);
@@ -47,8 +46,7 @@ public class Records
 
   @Path("save")
   @POST
-  public Response save(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                       de.joergdev.mosy.api.model.Record record)
+  public Response save(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, de.joergdev.mosy.api.model.Record record)
   {
     return APIUtils.executeBL(record, new SaveResponse(), new Save(), token);
   }
@@ -58,5 +56,12 @@ public class Records
   public Response delete(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, @PathParam("id") Integer id)
   {
     return APIUtils.executeBL(id, new EmptyResponse(), new Delete(), token);
+  }
+
+  @Path("delete")
+  @DELETE
+  public Response delete(@HeaderParam(HttpHeaders.AUTHORIZATION) String token)
+  {
+    return APIUtils.executeBL(null, new EmptyResponse(), new DeleteAll(), token);
   }
 }

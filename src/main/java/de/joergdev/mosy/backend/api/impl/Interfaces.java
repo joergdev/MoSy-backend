@@ -38,8 +38,7 @@ public class Interfaces
 
   @Path(value = "save")
   @POST
-  public Response save(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                       de.joergdev.mosy.api.model.Interface apiInterface)
+  public Response save(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, de.joergdev.mosy.api.model.Interface apiInterface)
   {
     return APIUtils.executeBL(apiInterface, new SaveResponse(), new Save(), token);
   }
@@ -53,27 +52,23 @@ public class Interfaces
 
   @Path(value = "{i_id}/methods/{m_id}/mockdata")
   @GET
-  public Response loadMethodMockData(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                                     @PathParam("i_id") Integer interfaceId, @PathParam("m_id") Integer id)
+  public Response loadMethodMockData(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, @PathParam("i_id") Integer interfaceId,
+                                     @PathParam("m_id") Integer id)
   {
-    return APIUtils.executeBL(createApiMethodObject(interfaceId, id), new LoadMockDataResponse(),
-        new LoadMockData(), token);
+    return APIUtils.executeBL(createApiMethodObject(interfaceId, id), new LoadMockDataResponse(), new LoadMockData(), token);
   }
 
   @Path(value = "{i_id}/methods/{m_id}/recordconfigs")
   @GET
-  public Response loadMethodRecordConfigs(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                                          @PathParam("i_id") Integer interfaceId,
+  public Response loadMethodRecordConfigs(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, @PathParam("i_id") Integer interfaceId,
                                           @PathParam("m_id") Integer id)
   {
-    return APIUtils.executeBL(createApiMethodObject(interfaceId, id), new LoadRecordConfigsResponse(),
-        new LoadRecordConfigs(), token);
+    return APIUtils.executeBL(createApiMethodObject(interfaceId, id), new LoadRecordConfigsResponse(), new LoadRecordConfigs(), token);
   }
 
   @Path("{i_id}/methods/{m_id}/records")
   @GET
-  public Response loadRecordsForInterfaceMethod(@HeaderParam(HttpHeaders.AUTHORIZATION) String token,
-                                                @PathParam("i_id") Integer interfaceId,
+  public Response loadRecordsForInterfaceMethod(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, @PathParam("i_id") Integer interfaceId,
                                                 @PathParam("m_id") Integer id)
   {
     InterfaceMethod apiMethod = createApiMethodObject(interfaceId, id);
@@ -91,7 +86,7 @@ public class Interfaces
 
     InterfaceMethod apiMethod = new InterfaceMethod();
     apiMethod.setInterfaceMethodId(id);
-    apiMethod.setMockInterface(apiInterface);
+    apiMethod.setMockInterfaceData(apiInterface);
     return apiMethod;
   }
 }

@@ -73,16 +73,13 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
   @Override
   protected void execute()
   {
-    Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this,
-        request.getServicePathInterface(), false);
+    Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this, request.getServicePathInterface(), false);
     InterfaceType interfaceType = InterfaceType.getById(dbInterface.getType().getInterfaceTypeId());
 
-    dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(), true,
-        request.getHttpMethod(), dbInterface, false);
+    dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(), true, request.getHttpMethod(), dbInterface, false);
 
     // request must be set (except if rest)
-    leaveOn(!InterfaceType.REST.equals(interfaceType) && !request.isRouteOnly()
-            && de.joergdev.mosy.shared.Utils.isEmpty(request.getContent()),
+    leaveOn(!InterfaceType.REST.equals(interfaceType) && !request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getContent()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("content"));
 
     checkMockProfile();
@@ -115,8 +112,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     }
   }
 
-  private void tryMock(Interface dbInterface, InterfaceMethod dbMethod, BaseData baseData,
-                       InterfaceType interfaceType)
+  private void tryMock(Interface dbInterface, InterfaceMethod dbMethod, BaseData baseData, InterfaceType interfaceType)
   {
     MockData dbMockDataFound = getMockDataForRequest(dbMethod, interfaceType);
 
@@ -136,10 +132,8 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       }
       else
       {
-        leaveOn(true,
-            ResponseCode.OPERATION_FAILED_ERROR
-                .withAddtitionalInfo("no mockdata for interface " + dbInterface.getName() + ", method "
-                                     + dbMethod.getName() + ", request " + request.getContent()));
+        leaveOn(true, ResponseCode.OPERATION_FAILED_ERROR.withAddtitionalInfo(
+            "no mockdata for interface " + dbInterface.getName() + ", method " + dbMethod.getName() + ", request " + request.getContent()));
       }
     }
     // return mock response
@@ -208,15 +202,14 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
         continue;
       }
 
-      if (Utils.isEmpty(dbMockData.getRequest()) && dbMockData.getPathParams().isEmpty()
-          && dbMockData.getUrlArguments().isEmpty())
+      if (Utils.isEmpty(dbMockData.getRequest()) && dbMockData.getPathParams().isEmpty() && dbMockData.getUrlArguments().isEmpty())
       {
         dbMockDataMethodGlobal = dbMockData;
       }
       else
       {
-        if (dataMatchesRequestContent(interfaceType, dbMockData.getRequest(),
-            getPathParamsMap(dbMockData.getPathParams()), getUrlArgumentsMap(dbMockData.getUrlArguments())))
+        if (dataMatchesRequestContent(interfaceType, dbMockData.getRequest(), getPathParamsMap(dbMockData.getPathParams()),
+            getUrlArgumentsMap(dbMockData.getUrlArguments())))
         {
           dbMockDataFound = dbMockData;
 
@@ -265,14 +258,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     }
 
     HttpMethod httpMethodRequest = request.getHttpMethod();
-    if (httpMethodRequest != null
-        && !httpMethodRequest.toString().equals(dbMockData.getInterfaceMethod().getHttpMethod()))
+    if (httpMethodRequest != null && !httpMethodRequest.toString().equals(dbMockData.getInterfaceMethod().getHttpMethod()))
     {
       return false;
     }
 
-    boolean commonDbMockData = Boolean.TRUE.equals(dbMockData.getCommon())
-                               || dbMockData.getMockProfiles().isEmpty();
+    boolean commonDbMockData = Boolean.TRUE.equals(dbMockData.getCommon()) || dbMockData.getMockProfiles().isEmpty();
 
     String mockProfileNameReq = request.getMockProfileName();
     if (mockProfileNameReq == null)
@@ -284,8 +275,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     }
     else
     {
-      if (!dbMockData.getMockProfiles().stream()
-          .anyMatch(mp -> mockProfileNameReq.equalsIgnoreCase(mp.getMockProfile().getName())))
+      if (!dbMockData.getMockProfiles().stream().anyMatch(mp -> mockProfileNameReq.equalsIgnoreCase(mp.getMockProfile().getName())))
       {
         if (commonDbMockData)
         {
@@ -447,26 +437,22 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
   private void checkMockProfile()
   {
-    leaveOn(request.getMockProfileName() != null
-            && !getDao(MockProfileDao.class).existsByName(request.getMockProfileName(), null),
+    leaveOn(request.getMockProfileName() != null && !getDao(MockProfileDao.class).existsByName(request.getMockProfileName(), null),
         ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("mockProfile " + request.getMockProfileName()));
   }
 
   private void checkRecordSession()
   {
     leaveOn(request.getRecordSessionID() != null
-            && entityMgr.find(de.joergdev.mosy.backend.persistence.model.RecordSession.class,
-                request.getRecordSessionID()) == null,
-        ResponseCode.DATA_DOESNT_EXIST
-            .withAddtitionalInfo("recordSession with id " + request.getRecordSessionID()));
+            && entityMgr.find(de.joergdev.mosy.backend.persistence.model.RecordSession.class, request.getRecordSessionID()) == null,
+        ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo("recordSession with id " + request.getRecordSessionID()));
   }
 
-  private void doRouting(String requestContent, Interface dbInterface, BaseData baseData,
-                         InterfaceMethod dbMethod, InterfaceType interfaceType)
+  private void doRouting(String requestContent, Interface dbInterface, BaseData baseData, InterfaceMethod dbMethod, InterfaceType interfaceType)
   {
     String routingURL = dbInterface.getRoutingUrl();
-    leaveOn(Utils.isEmpty(routingURL), ResponseCode.OPERATION_NOT_POSSIBLE.withAddtitionalInfo(
-        "mock not enabled and no routing configured for interface " + dbInterface.getName()));
+    leaveOn(Utils.isEmpty(routingURL),
+        ResponseCode.OPERATION_NOT_POSSIBLE.withAddtitionalInfo("mock not enabled and no routing configured for interface " + dbInterface.getName()));
 
     if (!Utils.isEmpty(request.getRouteAddition()))
     {
@@ -491,14 +477,13 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // route soap request
     if (InterfaceType.SOAP.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST,
-          request.getHttpHeaders().getRequestHeaders(), true);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, request.getHttpHeaders().getRequestHeaders(), true);
     }
     // route rest request
     else if (InterfaceType.REST.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent,
-          request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(), false);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(),
+          false);
     }
 
     throw new IllegalArgumentException("routing not possible for interfaceType " + interfaceType);
@@ -539,8 +524,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
         String pathPartMethod = pathPartsMethod[x];
         if (pathPartMethod.startsWith("{") && pathPartMethod.endsWith("}"))
         {
-          pathParams.add(
-              new PathParam(pathPartMethod.substring(1, pathPartMethod.length() - 1), pathPartsRequest[x]));
+          pathParams.add(new PathParam(pathPartMethod.substring(1, pathPartMethod.length() - 1), pathPartsRequest[x]));
         }
       }
     }
@@ -548,8 +532,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     return pathParams;
   }
 
-  private boolean recordRequestResponse(BaseData baseData, Interface dbInterface, InterfaceMethod dbMethod,
-                                        InterfaceType interfaceType)
+  private boolean recordRequestResponse(BaseData baseData, Interface dbInterface, InterfaceMethod dbMethod, InterfaceType interfaceType)
   {
     // no record without method
     if (dbMethod == null)
@@ -588,8 +571,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     }
 
     // Method global config yes/no
-    RecordConfig rcMethod = getDao(RecordConfigDAO.class)
-        .getByInterfaceMethodId(dbMethod.getInterfaceMethodId());
+    RecordConfig rcMethod = getDao(RecordConfigDAO.class).getByInterfaceMethodId(dbMethod.getInterfaceMethodId());
     if (rcMethod != null)
     {
       if (Boolean.TRUE.equals(rcMethod.getEnabled()))
@@ -605,8 +587,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // Record by RecordConfig
     for (RecordConfig rc : dbMethod.getRecordConfig())
     {
-      if (Boolean.TRUE.equals(rc.getEnabled())
-          && dataMatchesRequestContent(interfaceType, rc.getRequestData(), null, null))
+      if (Boolean.TRUE.equals(rc.getEnabled()) && dataMatchesRequestContent(interfaceType, rc.getRequestData(), null, null))
       {
         return true;
       }
@@ -615,8 +596,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     return false;
   }
 
-  private boolean dataMatchesRequestContent(InterfaceType interfaceType, String needle,
-                                            Map<String, String> pathParams, Map<String, String> urlArguments)
+  private boolean dataMatchesRequestContent(InterfaceType interfaceType, String needle, Map<String, String> pathParams, Map<String, String> urlArguments)
   {
     // first check if pathParams (not) match (if set)
     if (!Utils.nvlMap(pathParams).isEmpty())
@@ -643,8 +623,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     {
       for (Entry<String, String> urlArgEntry : urlArguments.entrySet())
       {
-        if (request.getUrlArguments().stream().noneMatch(
-            ua -> ua.getKey().equals(urlArgEntry.getKey()) && ua.getValue().equals(urlArgEntry.getValue())))
+        if (request.getUrlArguments().stream().noneMatch(ua -> ua.getKey().equals(urlArgEntry.getKey()) && ua.getValue().equals(urlArgEntry.getValue())))
         {
           return false;
         }
@@ -764,7 +743,7 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       apiInterface.setInterfaceId(dbMethod.getMockInterface().getInterfaceId());
       apiInterface.setName(dbMethod.getMockInterface().getName());
 
-      apiMethod.setMockInterface(apiInterface);
+      apiMethod.setMockInterfaceData(apiInterface);
       response.setInterfaceMethod(apiMethod);
     }
   }
