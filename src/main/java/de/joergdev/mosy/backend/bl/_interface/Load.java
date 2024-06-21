@@ -22,8 +22,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
   @Override
   protected void validateInput()
   {
-    leaveOn(request == null || !Utils.isPositive(request),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("name"));
+    leaveOn(request == null || !Utils.isPositive(request), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("name"));
   }
 
   @Override
@@ -47,9 +46,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     transferMethods(dbInterface);
 
     // Record Y/N
-    apiInterface.setRecord(dbInterface.getRecordConfig() == null
-        ? null
-        : Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
+    apiInterface.setRecord(dbInterface.getRecordConfig() == null ? null : Boolean.TRUE.equals(dbInterface.getRecordConfig().getEnabled()));
   }
 
   private void transferMethods(Interface dbInterface)
@@ -57,7 +54,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
     for (InterfaceMethod dbMethod : dbInterface.getMethods())
     {
       de.joergdev.mosy.api.model.InterfaceMethod apiMethod = new de.joergdev.mosy.api.model.InterfaceMethod();
-      apiMethod.setMockInterface(apiInterface);
+      apiMethod.setMockInterfaceData(apiInterface);
       apiInterface.getMethods().add(apiMethod);
 
       ObjectUtils.copyValues(dbMethod, apiMethod, "mockInterface", "httpMethod");

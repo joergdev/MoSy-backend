@@ -25,9 +25,7 @@ public class RecordDAO extends AbstractDAO
 
     if (loadCount != null || lastLoadedId != null)
     {
-      sql.append(needsWhere
-          ? " where "
-          : " and ");
+      sql.append(needsWhere ? " where " : " and ");
 
       sql.append(" r.record_id in ( ");
       sql.append("    select r2.record_id from record r2 ");
@@ -76,5 +74,15 @@ public class RecordDAO extends AbstractDAO
     Query q = entityMgr.createNativeQuery(sql.toString());
 
     return Utils.bigInteger2Integer(getSingleResult(q));
+  }
+
+  public void deleteAll()
+  {
+    StringBuilder sql = new StringBuilder();
+    sql.append(" delete from record ");
+
+    Query q = entityMgr.createNativeQuery(sql.toString());
+
+    executeUpdate(q);
   }
 }
