@@ -1,75 +1,46 @@
 package de.joergdev.mosy.backend.persistence.dao;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.Query;
-import de.joergdev.mosy.backend.persistence.Constraint;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.GlobalConfig;
-import de.joergdev.mosy.shared.Utils;
 
 public class GlobalConfigDAO extends AbstractDAO
 {
   public GlobalConfig get()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" select * from global_config ");
+    sql.append(" select * from global_config where tenant_id = :tenant_id ");
 
     Query q = entityMgr.createNativeQuery(sql.toString(), GlobalConfig.class);
+
+    q.setParameter("tenant_id", tenantId);
 
     return getSingleResult(q);
   }
 
+  /**
+   * Reset mockActive Flag to startup Flag.
+   */
   public void setValuesOnStartup()
   {
+    Map<String, Object> params = new HashMap<>();
+
     StringBuilder sql = new StringBuilder();
     sql.append(" update global_config set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP ");
 
-    Query q = entityMgr.createNativeQuery(sql.toString());
-
-    executeUpdate(q);
-  }
-
-  @SuppressWarnings("unchecked")
-  public Constraint findConstraint(String table, String col)
-  {
-    StringBuilder sql = new StringBuilder();
-    sql.append(" SELECT constraint_Name, sql ");
-    sql.append(" FROM INFORMATION_SCHEMA.CONSTRAINTS ");
-    sql.append(" where table_name = :tbl and COLUMN_LIST = :col ");
-
-    Query q = entityMgr.createNativeQuery(sql.toString());
-    q.setParameter("tbl", table);
-    q.setParameter("col", col);
-
-    Object[] arr = (Object[]) Utils.getFirstElementOfCollection(q.getResultList());
-    if (arr != null)
+    if (tenantId != null)
     {
-      Constraint c = new Constraint();
-      c.setTable(table);
-      c.setName((String) arr[0]);
-      c.setSql((String) arr[1]);
+      sql.append(" where tenant_id = :tenant_id ");
 
-      return c;
+      params.put("tenant_id", tenantId);
     }
 
-    return null;
-  }
+    Query q = entityMgr.createNativeQuery(sql.toString());
 
-  public void alterConstraint(Constraint constraint)
-  {
-    // First drop the constraint
-    StringBuilder sqlDrop = new StringBuilder();
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
-    // for any reason alter with parameters (table, constraint) doest work here
-    sqlDrop.append(" ALTER TABLE ").append(constraint.getTable()).append(" DROP CONSTRAINT ")
-        .append(constraint.getName());
-
-    Query q = entityMgr.createNativeQuery(sqlDrop.toString());
-
-    q.executeUpdate();
-
-    // Then recreate with new sql alter command
-    q = entityMgr.createNativeQuery(constraint.getSql());
-
-    q.executeUpdate();
+    executeUpdate(q);
   }
 }

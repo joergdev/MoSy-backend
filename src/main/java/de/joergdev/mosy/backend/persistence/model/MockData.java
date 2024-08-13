@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "MOCK_DATA")
-public class MockData
+public class MockData implements TenantScoped
 {
   public static final int LENGTH_TITLE = 200;
   public static final int LENGTH_REQUEST = 500000;
@@ -26,6 +26,10 @@ public class MockData
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer mockDataId;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "TITLE", length = LENGTH_TITLE)
   private String title;
@@ -255,5 +259,17 @@ public class MockData
   public void setDelay(Long delay)
   {
     this.delay = delay;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

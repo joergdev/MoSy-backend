@@ -23,9 +23,9 @@ public class System
 {
   @Path(value = "login")
   @POST
-  public Response login(Integer hash)
+  public Response login(de.joergdev.mosy.api.request.system.LoginRequest loginRequest)
   {
-    return APIUtils.executeBL(hash, new LoginResponse(), new Login());
+    return APIUtils.executeBL(loginRequest, new LoginResponse(), new Login());
   }
 
   @Path(value = "logout")

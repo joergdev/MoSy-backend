@@ -14,9 +14,11 @@ public class RecordConfigDAO extends AbstractDAO
     StringBuilder sql = new StringBuilder();
 
     sql.append(" select rc.* from RECORD_CONFIG rc ");
-    sql.append(" where rc.INTERFACE_ID is null and rc.INTERFACE_METHOD_ID is null ");
+    sql.append(" where tenant_id = :tenant_id and rc.INTERFACE_ID is null and rc.INTERFACE_METHOD_ID is null ");
 
     Query q = entityMgr.createNativeQuery(sql.toString(), RecordConfig.class);
+
+    q.setParameter("tenant_id", tenantId);
 
     return getSingleResult(q);
   }

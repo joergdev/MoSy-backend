@@ -29,6 +29,7 @@ import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.globalconfig.Load;
 import de.joergdev.mosy.backend.bl.record.Save;
 import de.joergdev.mosy.backend.bl.utils.PersistenceUtil;
+import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.dao.InterfaceMethodDAO;
 import de.joergdev.mosy.backend.persistence.dao.MockDataDAO;
 import de.joergdev.mosy.backend.persistence.dao.MockProfileDao;
@@ -46,6 +47,8 @@ import de.joergdev.mosy.shared.Utils;
 
 public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommonResponse>
 {
+  private MultivaluedMap<String, String> requestHeader;
+
   private String mockResponse;
   private Integer mockResponseHttpCode;
   private MultivaluedMap<String, Object> mockResponseHeaders;
@@ -68,11 +71,16 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
     leaveOn(!request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
+
+    requestHeader = request.getHttpHeaders().getRequestHeaders();
+    leaveOn(requestHeader == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header"));
   }
 
   @Override
   protected void execute()
   {
+    TenancyUtils.setInternTokenForTenancy(this, requestHeader);
+
     Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this, request.getServicePathInterface(), false);
     InterfaceType interfaceType = InterfaceType.getById(dbInterface.getType().getInterfaceTypeId());
 
@@ -477,13 +485,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // route soap request
     if (InterfaceType.SOAP.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, request.getHttpHeaders().getRequestHeaders(), true);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, requestHeader, true);
     }
     // route rest request
     else if (InterfaceType.REST.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(),
-          false);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), requestHeader, false);
     }
 
     throw new IllegalArgumentException("routing not possible for interfaceType " + interfaceType);

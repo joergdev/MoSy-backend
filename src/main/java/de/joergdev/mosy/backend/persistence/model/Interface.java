@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "INTERFACE")
-public class Interface
+public class Interface implements TenantScoped
 {
   public static final int LENGTH_NAME = 200;
   public static final int LENGTH_SERVICE_PATH = 200;
@@ -26,6 +26,10 @@ public class Interface
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer interfaceId;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "NAME", length = LENGTH_NAME, unique = true, nullable = false)
   private String name;
@@ -153,5 +157,17 @@ public class Interface
   public void setMockActive(Boolean mockActive)
   {
     this.mockActive = mockActive;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

@@ -24,7 +24,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
 
   protected boolean isSubcall = false;
 
-  protected EntityManager entityMgr;
+  protected BLEntityManager entityMgr;
 
   public void executeCore(boolean throwException)
   {
@@ -158,8 +158,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     return invokeSubBL(bl, request, response, true);
   }
 
-  public <L, M extends AbstractResponse> M invokeSubBL(AbstractBL<L, M> bl, L request, M response,
-                                                       boolean throwException)
+  public <L, M extends AbstractResponse> M invokeSubBL(AbstractBL<L, M> bl, L request, M response, boolean throwException)
   {
     bl.isSubcall = true;
 
@@ -173,10 +172,6 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     try
     {
       bl.executeCore(throwException);
-    }
-    catch (RuntimeException ex)
-    {
-      throw ex;
     }
     finally
     {
@@ -223,7 +218,15 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
 
   public void setEntityMgr(EntityManager entityMgr)
   {
-    this.entityMgr = entityMgr;
+    if (entityMgr != null)
+    {
+      // overwrite EntityManger for check tenancy before delegate to origin EntityManger
+      this.entityMgr = new BLEntityManager(entityMgr, getTenantId());
+    }
+    else
+    {
+      this.entityMgr = null;
+    }
   }
 
   public <L extends AbstractDAO> L getDao(Class<L> daoClass)
@@ -233,6 +236,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
       L dao = daoClass.newInstance();
 
       dao.setEntityMgr(entityMgr);
+      dao.setTenantId(getTenantId());
 
       return dao;
     }
@@ -249,5 +253,10 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     leaveOn(entity == null, ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo(errorOnNull));
 
     return entity;
+  }
+
+  protected Integer getTenantId()
+  {
+    return TokenManagerService.getTenantId(token);
   }
 }

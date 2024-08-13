@@ -12,7 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "RECORD_CONFIG")
-public class RecordConfig
+public class RecordConfig implements TenantScoped
 {
   public static final int LENGTH_TITLE = 200;
 
@@ -20,6 +20,10 @@ public class RecordConfig
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer recordConfigId;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "TITLE", length = LENGTH_TITLE)
   private String title;
@@ -96,5 +100,17 @@ public class RecordConfig
   public void setTitle(String title)
   {
     this.title = title;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

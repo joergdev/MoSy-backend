@@ -23,10 +23,21 @@ public class MockDataDAO extends AbstractDAO
 
   public void setValuesOnStartup()
   {
+    Map<String, Object> params = new HashMap<>();
+
     StringBuilder sql = new StringBuilder();
     sql.append(" update MOCK_DATA set COUNT_CALLS = 0 ");
 
+    if (tenantId != null)
+    {
+      sql.append(" where tenant_id = :tenant_id ");
+
+      params.put("tenant_id", tenantId);
+    }
+
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
     executeUpdate(q);
   }
@@ -65,7 +76,7 @@ public class MockDataDAO extends AbstractDAO
     StringBuilder sql = new StringBuilder();
 
     sql.append(" delete from MOCK_DATA md ");
-    sql.append(" where md.COMMON = 0 ");
+    sql.append(" where md.tenant_id = :tenant_id and md.COMMON = 0 ");
     sql.append(" and not exists ( ");
     sql.append("  select 1 from MOCK_DATA_MOCK_PROFILE mdmp ");
     sql.append("  where mdmp.MOCK_DATA_ID = md.MOCK_DATA_ID ");
@@ -73,6 +84,7 @@ public class MockDataDAO extends AbstractDAO
     sql.append(" ) ");
 
     Map<String, Object> params = new HashMap<>();
+    params.put("tenant_id", tenantId);
     params.put("mp_id", mockProfileID);
 
     Query q = entityMgr.createNativeQuery(sql.toString());

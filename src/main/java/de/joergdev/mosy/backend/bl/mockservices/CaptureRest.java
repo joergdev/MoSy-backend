@@ -5,6 +5,7 @@ import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonReq
 import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.utils.PersistenceUtil;
+import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.model.Interface;
 import de.joergdev.mosy.shared.Utils;
 
@@ -24,13 +25,14 @@ public class CaptureRest extends AbstractBL<CaptureCommonRequest, CaptureCommonR
     leaveOn(request == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
     path = request.getServicePathInterface();
-    leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(path),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("path"));
+    leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(path), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("path"));
   }
 
   @Override
   protected void execute()
   {
+    TenancyUtils.setInternTokenForTenancy(this, request.getHttpHeaders().getRequestHeaders());
+
     setServicePathInterface();
     setServicePathMethod();
 

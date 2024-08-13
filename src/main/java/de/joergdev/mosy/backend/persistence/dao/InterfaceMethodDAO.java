@@ -27,10 +27,21 @@ public class InterfaceMethodDAO extends AbstractDAO
 
   public void setValuesOnStartup()
   {
+    Map<String, Object> params = new HashMap<>();
+
     StringBuilder sql = new StringBuilder();
-    sql.append(" update interface_method set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP, COUNT_CALLS = 0");
+    sql.append(" update interface_method set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP, COUNT_CALLS = 0 ");
+
+    if (tenantId != null)
+    {
+      sql.append(" where tenant_id = :tenant_id ");
+
+      params.put("tenant_id", tenantId);
+    }
 
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
     executeUpdate(q);
   }
@@ -51,27 +62,22 @@ public class InterfaceMethodDAO extends AbstractDAO
     @SuppressWarnings("unchecked")
     List<Integer> resultList = q.getResultList();
 
-    return Utils.isCollectionEmpty(resultList)
-        ? null
-        : Integer.valueOf(1).equals(Utils.getFirstElementOfCollection(resultList));
+    return Utils.isCollectionEmpty(resultList) ? null : Integer.valueOf(1).equals(Utils.getFirstElementOfCollection(resultList));
   }
 
-  public InterfaceMethod getByServicePath(Integer interfaceId, String servicePath,
-                                          boolean nonStrictSearchServicePath, HttpMethod httpMethod)
+  public InterfaceMethod getByServicePath(Integer interfaceId, String servicePath, boolean nonStrictSearchServicePath, HttpMethod httpMethod)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
     return getBySearchParams(interfaceId, null, servicePath, nonStrictSearchServicePath, httpMethod, null);
   }
 
-  public boolean existsByInterfaceIdServicePath(Integer interfaceId, String servicePath,
-                                                boolean nonStrictSearchServicePath, HttpMethod httpMethod,
+  public boolean existsByInterfaceIdServicePath(Integer interfaceId, String servicePath, boolean nonStrictSearchServicePath, HttpMethod httpMethod,
                                                 Integer exceptID)
   {
     Objects.requireNonNull(servicePath, "servicePath");
 
-    return getBySearchParams(interfaceId, null, servicePath, nonStrictSearchServicePath, httpMethod,
-        exceptID) != null;
+    return getBySearchParams(interfaceId, null, servicePath, nonStrictSearchServicePath, httpMethod, exceptID) != null;
   }
 
   public boolean existsByInterfaceIdName(Integer interfaceId, String name, Integer exceptID)
@@ -81,8 +87,7 @@ public class InterfaceMethodDAO extends AbstractDAO
     return getBySearchParams(interfaceId, name, null, false, null, exceptID) != null;
   }
 
-  public InterfaceMethod getBySearchParams(Integer interfaceId, String name, String servicePath,
-                                           boolean nonStrictSearchServicePath, HttpMethod httpMethod,
+  public InterfaceMethod getBySearchParams(Integer interfaceId, String name, String servicePath, boolean nonStrictSearchServicePath, HttpMethod httpMethod,
                                            Integer exceptID)
   {
     Objects.requireNonNull(interfaceId, "interfaceId");
