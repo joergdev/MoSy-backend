@@ -4,6 +4,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
+import de.joergdev.mosy.backend.persistence.model.Tenant;
 import de.joergdev.mosy.shared.Utils;
 
 public class AbstractDAO
@@ -47,7 +48,12 @@ public class AbstractDAO
     {
       for (T result : resultList)
       {
-        TenancyUtils.checkTenantAccessForDbEntity(result, tenantId);
+        // No Check if List of Tenants => in this case we assume its correct to return tenants that are not the current tenant
+        // for example to check if tenant exists by name
+        if (result instanceof Tenant == false)
+        {
+          TenancyUtils.checkTenantAccessForDbEntity(result, tenantId);
+        }
       }
     }
 
