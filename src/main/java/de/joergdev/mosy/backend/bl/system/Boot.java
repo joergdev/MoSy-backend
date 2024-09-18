@@ -13,6 +13,7 @@ import de.joergdev.mosy.api.response.EmptyResponse;
 import de.joergdev.mosy.backend.Config;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.globalconfig.Save;
+import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.Constraint;
 import de.joergdev.mosy.backend.persistence.dao.DbConfigDAO;
 import de.joergdev.mosy.backend.persistence.dao.GlobalConfigDAO;
@@ -73,6 +74,8 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
 
       entityMgr.persist(dbTenant);
       entityMgr.flush();
+
+      createGlobalConfigIfNotExisting(dbTenant.getTenantId(), true);
     }
   }
 
@@ -255,12 +258,26 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
 
   private void createGlobalConfigIfNotExisting()
   {
-    if (getTenantId() == null)
+    createGlobalConfigIfNotExisting(getTenantId(), false);
+  }
+
+  private void createGlobalConfigIfNotExisting(Integer tenantId, boolean ctxCreateDefaultTenantForNonMultiTanency)
+  {
+    if (tenantId == null)
     {
       return;
     }
 
-    GlobalConfig dbGlobalConfig = getDao(GlobalConfigDAO.class).get();
+    GlobalConfigDAO dao = getDao(GlobalConfigDAO.class);
+
+    // We have to set the tenantId for the use-case creation for default tenant (non-multi-tanency).
+    // In this case the tenantId is not set global.
+    if (ctxCreateDefaultTenantForNonMultiTanency)
+    {
+      dao.setTenantId(tenantId);
+    }
+
+    GlobalConfig dbGlobalConfig = dao.get();
 
     if (dbGlobalConfig == null)
     {
@@ -268,7 +285,21 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
       apiBaseData.setTtlMockProfile(86400);
       apiBaseData.setTtlRecordSession(86400);
 
+      // See above, here we have to set an token for the default tenant.
+      // afterwards set the token back to null
+      boolean resetToken = false;
+      if (ctxCreateDefaultTenantForNonMultiTanency && getToken() == null)
+      {
+        TenancyUtils.setInternTokenForTenancy(this, (Integer) null);
+        resetToken = true;
+      }
+
       invokeSubBL(new Save(), apiBaseData, new EmptyResponse());
+
+      if (resetToken)
+      {
+        setToken(null);
+      }
     }
   }
 

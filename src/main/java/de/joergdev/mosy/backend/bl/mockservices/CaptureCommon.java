@@ -485,12 +485,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // route soap request
     if (InterfaceType.SOAP.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, requestHeader, true);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, requestHeader, true, false);
     }
     // route rest request
     else if (InterfaceType.REST.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), requestHeader, false);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), requestHeader, false, false);
     }
 
     throw new IllegalArgumentException("routing not possible for interfaceType " + interfaceType);

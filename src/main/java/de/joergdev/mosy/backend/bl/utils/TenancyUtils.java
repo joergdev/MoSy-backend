@@ -21,11 +21,6 @@ public class TenancyUtils
 
   public static void setInternTokenForTenancy(AbstractBL<?, ? extends AbstractResponse> bl, MultivaluedMap<String, String> requestHeader)
   {
-    if (bl.getToken() != null)
-    {
-      return;
-    }
-
     Integer tenantId = null;
     if (Config.isMultiTenancyEnabled())
     {
@@ -34,6 +29,16 @@ public class TenancyUtils
       bl.leaveOn(!Utils.isNumeric(tenantIdHeader), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header - tenantId"));
 
       tenantId = Integer.valueOf(tenantIdHeader);
+    }
+
+    setInternTokenForTenancy(bl, tenantId);
+  }
+
+  public static void setInternTokenForTenancy(AbstractBL<?, ? extends AbstractResponse> bl, Integer tenantId)
+  {
+    if (bl.getToken() != null)
+    {
+      return;
     }
 
     String token = TokenManagerService.createTokenWithoutSecretCheck(tenantId, () -> TenancyUtils.getDefaultTenantIdForNonMultiTanency(bl));

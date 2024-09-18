@@ -25,7 +25,7 @@ import de.joergdev.mosy.shared.Utils;
 public class HttpRouting
 {
   public static Response doRouting(String endpoint, String endpointCalled, String request, HttpMethod httpMethod, MultivaluedMap<String, String> headerMap,
-                                   boolean isSOAP)
+                                   boolean isSOAP, boolean isInternalRouting)
   {
     ByteArrayOutputStream outputStreamRequest = null;
     OutputStream httpOutRequest = null;
@@ -40,6 +40,9 @@ public class HttpRouting
 
       HttpURLConnection httpConn = (HttpURLConnection) new URL(endpoint).openConnection();
 
+      // Transfer header data
+      transferHeaderData(headerMap, httpConn, isInternalRouting);
+
       // Set the appropriate HTTP parameters.
       if (isWsdlRequest)
       {
@@ -48,9 +51,6 @@ public class HttpRouting
       }
       else
       {
-        // Transfer header data
-        transferHeaderData(headerMap, httpConn);
-
         byte[] bytesRequest = null;
 
         httpConn.setRequestMethod(httpMethod.name());
@@ -112,7 +112,8 @@ public class HttpRouting
 
     if (isWsdlRequest)
     {
-      response = response.replace(endpoint.substring(0, endpoint.length() - "?wsdl".length()), endpointCalled);
+      response = response.replace(endpoint.substring(0, endpoint.length() - "?wsdl".length()), //
+          endpointCalled.replace("?wsdl", ""));
     }
 
     ResponseBuilder responseBui = Response.status(httpConn.getResponseCode());
@@ -135,12 +136,13 @@ public class HttpRouting
     return responseBui.build();
   }
 
-  private static void transferHeaderData(MultivaluedMap<String, String> headerMap, HttpURLConnection httpConn)
+  private static void transferHeaderData(MultivaluedMap<String, String> headerMap, HttpURLConnection httpConn, boolean isInternalRouting)
   {
     for (String headerKey : headerMap.keySet())
     {
-      if (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey) || APIConstants.HTTP_HEADER_RECORD_SESSION_ID.equals(headerKey)
-          || APIConstants.HTTP_HEADER_TENANT_ID.equals(headerKey))
+      if (!isInternalRouting && (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey) //
+                                 || APIConstants.HTTP_HEADER_RECORD_SESSION_ID.equals(headerKey) //
+                                 || APIConstants.HTTP_HEADER_TENANT_ID.equals(headerKey)))
       {
         continue;
       }

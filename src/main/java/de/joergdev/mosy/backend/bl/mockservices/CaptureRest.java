@@ -1,5 +1,6 @@
 package de.joergdev.mosy.backend.bl.mockservices;
 
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
 import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
@@ -36,13 +37,24 @@ public class CaptureRest extends AbstractBL<CaptureCommonRequest, CaptureCommonR
     setServicePathInterface();
     setServicePathMethod();
 
+    setRouteAddition();
+
+    invokeSubBL(new CaptureCommon(), request, response);
+  }
+
+  private void setRouteAddition()
+  {
+    String routeAddition = "";
+
     String svcPathMethod = request.getServicePathMethod();
     if (!Utils.isEmpty(svcPathMethod))
     {
-      request.setRouteAddition("/" + svcPathMethod);
+      routeAddition = "/" + svcPathMethod;
     }
 
-    invokeSubBL(new CaptureCommon(), request, response);
+    routeAddition += UrlArgument.getUrlPartForUrlArguments(request.getUrlArguments());
+
+    request.setRouteAddition(routeAddition);
   }
 
   private void setServicePathInterface()
