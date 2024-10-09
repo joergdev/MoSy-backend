@@ -71,8 +71,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
    * Fuegt dem Event die uebergebene ErrorMessage als Error hinzu und
    * wirft eine Exception um den Worklfow zu beenden.
    * 
-   * @param rspCode
-   * @throws BLException
+   * @param rspCode - ResponseCode
    */
   public void leave(ResponseCode rspCode)
   {
@@ -93,8 +92,8 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
    * Fuegt dem Event die uebergebene ErrorMessage als Error hinzu und
    * wirft eine Exception um den Worklfow zu beenden.
    * 
-   * @param respM
-   * @throws BLException
+   * @param respM - ResponseMessage
+   * @throws BLException - will allways be thrown 
    */
   public void leave(ResponseMessage respM)
     throws BLException
@@ -130,7 +129,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
   /**
    * Adding an message to response.
    * 
-   * @param rspCode
+   * @param rspCode - ResponseCode
    */
   public void addResponseCode(ResponseCode rspCode)
   {
@@ -140,7 +139,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
   /**
    * Adding an message to response.
    * 
-   * @param rspM
+   * @param rspM - ResponseMessage
    */
   public void addResponseMessage(ResponseMessage rspM)
   {

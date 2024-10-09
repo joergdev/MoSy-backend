@@ -12,8 +12,10 @@ public class TokenManagerService
   /**
    * Creates a new token.
    * 
-   * @param hash
-   * @param tenantID - may be null if multi-tanency is not enabled
+   * @param hash - hashcode of secret
+   * @param tenantId - may be null if multi-tanency is not enabled
+   * @param hashForTenant - hashcode of secret for tenant (may be null if multi-tanency is not enabled)
+   * @param defaultTenantIdForNonMultiTanencySupplier - IntSupplier for resolving the default-tenantId (non-multi-tanency)
    * @return null on invalid credentials else valid token
    */
   public static String createToken(int hash, Integer tenantId, Integer hashForTenant, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
@@ -35,8 +37,8 @@ public class TokenManagerService
    * This token should never be delivered to a client!
    * </pre>
    * 
-   * @param tenantId
-   * @param defaultTenantIdForNonMultiTanencySupplier
+   * @param tenantId - ID
+   * @param defaultTenantIdForNonMultiTanencySupplier - IntSupplier for resolving the default-tenantId (non-multi-tanency)
    * @return null on invalid credentials else valid token
    */
   public static String createTokenWithoutSecretCheck(Integer tenantId, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
