@@ -290,7 +290,7 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
       boolean resetToken = false;
       if (ctxCreateDefaultTenantForNonMultiTanency && getToken() == null)
       {
-        TenancyUtils.setInternTokenForTenancy(this, (Integer) null);
+        TenancyUtils.setInternTokenForTenancy(this, tenantId);
         resetToken = true;
       }
 
