@@ -56,6 +56,13 @@ public class System
     return Response.ok().build();
   }
 
+  @Path(value = "version")
+  @GET
+  public Response getVersion()
+  {
+    return Response.ok().entity("4.0.1").build();
+  }
+
   @Path(value = "state-subsystem/{subsystem}")
   @GET
   public Response getStateSubsystem(@PathParam("subsystem") String subsystem)
