@@ -1,5 +1,6 @@
 package de.joergdev.mosy.backend.api.impl;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -205,7 +206,7 @@ public class MockServices
         String headerKey = headerEntry.getKey();
         List<Object> headerList = headerEntry.getValue();
 
-        if (!Utils.isEmpty(headerKey) && headerList != null)
+        if (!Utils.isEmpty(headerKey) && headerList != null && !isHeaderKeyBlacklisted(headerKey))
         {
           for (Object headerVal : headerList)
           {
@@ -219,6 +220,21 @@ public class MockServices
     }
 
     return responseBui.build();
+  }
+
+  /**
+   * <pre>
+   * This header keys should not be transfered to mock reponse.
+   * 
+   * - Transfer-Encoding => if set connection is aborted after timeout without response to client
+   * </pre>
+   * 
+   * @param headerKey
+   * @return boolean
+   */
+  private boolean isHeaderKeyBlacklisted(String headerKey)
+  {
+    return Arrays.asList("Transfer-Encoding").contains(headerKey);
   }
 
   private ResponseBuilder getResponseForFailedSoapRequest(String errorMsg)
