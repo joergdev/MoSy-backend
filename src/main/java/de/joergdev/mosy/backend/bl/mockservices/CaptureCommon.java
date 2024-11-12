@@ -69,9 +69,6 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathInterface()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath interface"));
 
-    leaveOn(!request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
-
     requestHeader = request.getHttpHeaders().getRequestHeaders();
     leaveOn(requestHeader == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header"));
   }
@@ -83,6 +80,10 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
 
     Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this, request.getServicePathInterface(), false);
     InterfaceType interfaceType = InterfaceType.getById(dbInterface.getType().getInterfaceTypeId());
+
+    // servicepath method must be set (except if rest)
+    leaveOn(!InterfaceType.REST.equals(interfaceType) && !request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
 
     dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(), true, request.getHttpMethod(), dbInterface, false);
 
