@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import de.joergdev.mosy.api.model.BaseData;
@@ -151,9 +154,25 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       mockResponse = dbMockDataFound.getResponse();
       mockResponseHttpCode = dbMockDataFound.getHttpReturnCode();
 
+      setMockResponseHeaders(interfaceType);
+
       getDao(MockDataDAO.class).increaseCountCalls(dbMockDataFound.getMockDataId());
 
       sleepOnDelaySet(dbMockDataFound);
+    }
+  }
+
+  private void setMockResponseHeaders(InterfaceType interfaceType)
+  {
+    mockResponseHeaders = new MultivaluedHashMap<>();
+
+    if (InterfaceType.REST.equals(interfaceType))
+    {
+      mockResponseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    }
+    else if (InterfaceType.SOAP.equals(interfaceType))
+    {
+      mockResponseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML);
     }
   }
 
