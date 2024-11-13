@@ -1,10 +1,12 @@
 package de.joergdev.mosy.backend.bl.mockservices;
 
+import de.joergdev.mosy.api.model.UrlArgument;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
 import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.utils.PersistenceUtil;
+import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.model.Interface;
 import de.joergdev.mosy.shared.Utils;
 
@@ -24,23 +26,35 @@ public class CaptureRest extends AbstractBL<CaptureCommonRequest, CaptureCommonR
     leaveOn(request == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
     path = request.getServicePathInterface();
-    leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(path),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("path"));
+    leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(path), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("path"));
   }
 
   @Override
   protected void execute()
   {
+    TenancyUtils.setInternTokenForTenancy(this, request.getHttpHeaders().getRequestHeaders());
+
     setServicePathInterface();
     setServicePathMethod();
+
+    setRouteAddition();
+
+    invokeSubBL(new CaptureCommon(), request, response);
+  }
+
+  private void setRouteAddition()
+  {
+    String routeAddition = "";
 
     String svcPathMethod = request.getServicePathMethod();
     if (!Utils.isEmpty(svcPathMethod))
     {
-      request.setRouteAddition("/" + svcPathMethod);
+      routeAddition = "/" + svcPathMethod;
     }
 
-    invokeSubBL(new CaptureCommon(), request, response);
+    routeAddition += UrlArgument.getUrlPartForUrlArguments(request.getUrlArguments());
+
+    request.setRouteAddition(routeAddition);
   }
 
   private void setServicePathInterface()

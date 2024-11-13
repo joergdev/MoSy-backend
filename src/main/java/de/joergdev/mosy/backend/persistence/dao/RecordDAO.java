@@ -13,19 +13,16 @@ public class RecordDAO extends AbstractDAO
   {
     StringBuilder sql = new StringBuilder();
     sql.append(" select * from record r ");
-
-    boolean needsWhere = true;
+    sql.append(" where tenant_id = :tenant_id ");
 
     if (recordSessionID != null)
     {
-      sql.append(" where r.RECORD_SESSION_ID = :rs_id ");
-
-      needsWhere = false;
+      sql.append(" and r.RECORD_SESSION_ID = :rs_id ");
     }
 
     if (loadCount != null || lastLoadedId != null)
     {
-      sql.append(needsWhere ? " where " : " and ");
+      sql.append(" and ");
 
       sql.append(" r.record_id in ( ");
       sql.append("    select r2.record_id from record r2 ");
@@ -42,11 +39,11 @@ public class RecordDAO extends AbstractDAO
       {
         sql.append(" and ROWNUM() <= :load_count ");
       }
-
-      needsWhere = false;
     }
 
     Query q = entityMgr.createNativeQuery(sql.toString(), Record.class);
+
+    q.setParameter("tenant_id", tenantId);
 
     if (recordSessionID != null)
     {
@@ -69,9 +66,12 @@ public class RecordDAO extends AbstractDAO
   public int getCount()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append("select count(record_id) from record ");
+    sql.append(" select count(record_id) from record ");
+    sql.append(" where tenant_id = :tenant_id ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    q.setParameter("tenant_id", tenantId);
 
     return Utils.bigInteger2Integer(getSingleResult(q));
   }
@@ -80,8 +80,11 @@ public class RecordDAO extends AbstractDAO
   {
     StringBuilder sql = new StringBuilder();
     sql.append(" delete from record ");
+    sql.append(" where tenant_id = :tenant_id ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    q.setParameter("tenant_id", tenantId);
 
     executeUpdate(q);
   }

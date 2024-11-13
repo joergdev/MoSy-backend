@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "RECORD")
-public class Record
+public class Record implements TenantScoped
 {
   @Column(name = "RECORD_ID")
   @Id
@@ -26,6 +26,10 @@ public class Record
   @ManyToOne
   @JoinColumn(name = "INTERFACE_METHOD_ID")
   private InterfaceMethod interfaceMethod;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "REQUEST_DATA", length = MockData.LENGTH_REQUEST)
   private String requestData;
@@ -138,5 +142,17 @@ public class Record
   public void setUrlArguments(List<RecordUrlArgument> urlArguments)
   {
     this.urlArguments = urlArguments;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

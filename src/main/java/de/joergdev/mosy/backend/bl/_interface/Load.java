@@ -28,7 +28,7 @@ public class Load extends AbstractBL<Integer, LoadResponse>
   @Override
   protected void execute()
   {
-    Interface dbInterface = findDbEntity(Interface.class, request, "no interface with name: " + request);
+    Interface dbInterface = findDbEntity(Interface.class, request, "no interface with id: " + request);
 
     // Basedata
     ObjectUtils.copyValues(dbInterface, apiInterface, "type", "methods");

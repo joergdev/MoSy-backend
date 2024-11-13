@@ -1,49 +1,96 @@
 package de.joergdev.mosy.backend.security;
 
-import java.util.HashSet;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.IntSupplier;
+import de.joergdev.mosy.backend.Config;
 
 public class TokenManagerService
 {
-  private static final ResourceBundle MOSY_BACKEND = ResourceBundle.getBundle("mosy_backend");
-
-  private static final int SECRET_HASH = MOSY_BACKEND.getString("login_secret").hashCode();
-
   private static final TokenHolder TOKEN_HOLDER = new TokenHolder();
 
   /**
    * Creates a new token.
    * 
-   * @param hash
+   * @param hash - hashcode of secret
+   * @param tenantId - may be null if multi-tanency is not enabled
+   * @param hashForTenant - hashcode of secret for tenant (may be null if multi-tanency is not enabled)
+   * @param defaultTenantIdForNonMultiTanencySupplier - IntSupplier for resolving the default-tenantId (non-multi-tanency)
    * @return null on invalid credentials else valid token
    */
-  public static String createToken(int hash)
+  public static String createToken(int hash, Integer tenantId, Integer hashForTenant, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
   {
-    if (hash != SECRET_HASH)
+    if (!checkSecret(hash, hashForTenant))
     {
       return null;
     }
 
-    String token = "@MOSY_" + System.currentTimeMillis() / Math.random();
+    return createToken(tenantId, defaultTenantIdForNonMultiTanencySupplier);
+  }
 
-    TOKEN_HOLDER.tokens.add(token);
+  /**
+   * <pre>
+   * Creates a new token WITHOUT check of secret key.
+   * 
+   * !!ATTENTION!!
+   * This may only be used for internal use cases.
+   * This token should never be delivered to a client!
+   * </pre>
+   * 
+   * @param tenantId - ID
+   * @param defaultTenantIdForNonMultiTanencySupplier - IntSupplier for resolving the default-tenantId (non-multi-tanency)
+   * @return null on invalid credentials else valid token
+   */
+  public static String createTokenWithoutSecretCheck(Integer tenantId, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
+  {
+    return createToken(tenantId, defaultTenantIdForNonMultiTanencySupplier);
+  }
 
-    return token;
+  private static String createToken(Integer tenantId, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
+  {
+    Token token = Token.of("@MOSY_" + System.currentTimeMillis() / Math.random(), getTenantIdForToken(tenantId, defaultTenantIdForNonMultiTanencySupplier));
+
+    TOKEN_HOLDER.tokens.put(token, token);
+
+    return token.getTokenId();
+  }
+
+  private static Integer getTenantIdForToken(Integer tenantId, IntSupplier defaultTenantIdForNonMultiTanencySupplier)
+  {
+    return Config.isMultiTenancyEnabled() ? tenantId : defaultTenantIdForNonMultiTanencySupplier.getAsInt();
+  }
+
+  private static boolean checkSecret(int hash, Integer hashForTenant)
+  {
+    if (Config.isMultiTenancyEnabled())
+    {
+      return hashForTenant != null && hash == hashForTenant;
+    }
+    else
+    {
+      return hash == Config.getLoginSecret();
+    }
   }
 
   public static boolean validateToken(String token)
   {
-    return TOKEN_HOLDER.tokens.contains(token);
+    return TOKEN_HOLDER.tokens.keySet().contains(Token.of(token));
   }
 
   public static boolean invalidateToken(String token)
   {
-    return TOKEN_HOLDER.tokens.remove(token);
+    return TOKEN_HOLDER.tokens.remove(Token.of(token)) != null;
+  }
+
+  public static Integer getTenantId(String token)
+  {
+    Token tokenObj = TOKEN_HOLDER.tokens.get(Token.of(token));
+
+    return tokenObj == null ? null : tokenObj.getTenantId();
   }
 
   private static class TokenHolder
   {
-    private final Set<String> tokens = new HashSet<>();
+    private final Map<Token, Token> tokens = new HashMap<>();
   }
 }

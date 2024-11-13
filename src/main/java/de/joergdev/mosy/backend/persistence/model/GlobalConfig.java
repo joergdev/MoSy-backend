@@ -4,15 +4,21 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "GLOBAL_CONFIG")
-public class GlobalConfig
+public class GlobalConfig implements TenantScoped
 {
   @Column(name = "CREATED", updatable = false)
   @Id
   private LocalDateTime created;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "MOCK_ACTIVE_ON_STARTUP", columnDefinition = "INT(1)")
   private Boolean mockActiveOnStartup;
@@ -28,9 +34,6 @@ public class GlobalConfig
 
   @Column(name = "TTL_MOCK_PROFILE")
   private Integer ttlMockProfile;
-
-  @Column(name = "SCHEMA_VERSION", length = 10)
-  private String schemaVersion;
 
   public Boolean getMockActiveOnStartup()
   {
@@ -104,13 +107,15 @@ public class GlobalConfig
     this.ttlMockProfile = ttlMockProfile;
   }
 
-  public String getSchemaVersion()
+  @Override
+  public Tenant getTenant()
   {
-    return schemaVersion;
+    return tenant;
   }
 
-  public void setSchemaVersion(String schemaVersion)
+  @Override
+  public void setTenant(Tenant tenant)
   {
-    this.schemaVersion = schemaVersion;
+    this.tenant = tenant;
   }
 }

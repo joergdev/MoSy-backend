@@ -15,12 +15,16 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "INTERFACE_METHOD")
-public class InterfaceMethod
+public class InterfaceMethod implements TenantScoped
 {
   @Column(name = "INTERFACE_METHOD_ID")
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer interfaceMethodId;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "NAME", length = Interface.LENGTH_NAME, nullable = false)
   private String name;
@@ -187,5 +191,17 @@ public class InterfaceMethod
   public void setServicePathIntern(String servicePathIntern)
   {
     this.servicePathIntern = servicePathIntern;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

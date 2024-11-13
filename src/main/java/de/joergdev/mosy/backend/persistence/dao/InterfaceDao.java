@@ -14,19 +14,34 @@ public class InterfaceDao extends AbstractDAO
   public List<Interface> getAll()
   {
     StringBuilder sql = new StringBuilder();
-    sql.append(" select * from INTERFACE order by INTERFACE_TYPE_ID, NAME ");
+    sql.append(" select * from INTERFACE  ");
+    sql.append(" where tenant_id = :tenant_id ");
+    sql.append(" order by INTERFACE_TYPE_ID, NAME ");
 
     Query q = entityMgr.createNativeQuery(sql.toString(), Interface.class);
+
+    q.setParameter("tenant_id", tenantId);
 
     return q.getResultList();
   }
 
   public void setValuesOnStartup()
   {
+    Map<String, Object> params = new HashMap<>();
+
     StringBuilder sql = new StringBuilder();
     sql.append(" update interface set MOCK_ACTIVE = MOCK_ACTIVE_ON_STARTUP ");
 
+    if (tenantId != null)
+    {
+      sql.append(" where tenant_id = :tenant_id ");
+
+      params.put("tenant_id", tenantId);
+    }
+
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
     executeUpdate(q);
   }
@@ -59,8 +74,7 @@ public class InterfaceDao extends AbstractDAO
     return getBySearchParams(name, null, false, exceptID) != null;
   }
 
-  public Interface getBySearchParams(String name, String servicePath, boolean servicePathStartsWith,
-                                     Integer exceptID)
+  public Interface getBySearchParams(String name, String servicePath, boolean servicePathStartsWith, Integer exceptID)
   {
     if (name == null && servicePath == null)
     {
@@ -69,25 +83,21 @@ public class InterfaceDao extends AbstractDAO
 
     StringBuilder sql = new StringBuilder();
     Map<String, Object> params = new HashMap<>();
-    boolean needsAnd = false;
 
     sql.append(" select * from INTERFACE ");
-    sql.append(" where ");
+    sql.append(" where tenant_id = :tenant_id ");
+
+    params.put("tenant_id", tenantId);
 
     if (name != null)
     {
-      sql.append(" name = :name ");
+      sql.append(" and name = :name ");
       params.put("name", name);
-
-      needsAnd = true;
     }
 
     if (servicePath != null)
     {
-      if (needsAnd)
-      {
-        sql.append(" and ");
-      }
+      sql.append(" and ");
 
       if (servicePathStartsWith)
       {
@@ -100,8 +110,6 @@ public class InterfaceDao extends AbstractDAO
       }
 
       params.put("svc_path", servicePath);
-
-      needsAnd = true;
     }
 
     if (exceptID != null)

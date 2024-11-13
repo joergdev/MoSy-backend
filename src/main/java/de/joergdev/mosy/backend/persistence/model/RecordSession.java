@@ -9,6 +9,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -17,12 +19,16 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "RECORD_SESSION")
-public class RecordSession
+public class RecordSession implements TenantScoped
 {
   @Column(name = "RECORD_SESSION_ID")
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer recordSessionID;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "CREATED")
   private LocalDateTime created;
@@ -64,5 +70,17 @@ public class RecordSession
   public void setRecords(List<Record> records)
   {
     this.records = records;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

@@ -145,8 +145,7 @@ public class MockServicesUtil
     return allMaps;
   }
 
-  private static boolean stackContainsNeedleMap(Map<String, Object> stack, String needleKey,
-                                                Object needleValue)
+  private static boolean stackContainsNeedleMap(Map<String, Object> stack, String needleKey, Object needleValue)
   {
     Object stackValue = stack.get(needleKey);
     if (stackValue instanceof Map == false)
@@ -168,8 +167,7 @@ public class MockServicesUtil
     return true;
   }
 
-  private static boolean stackContainsNeedleList(Map<String, Object> stack, String needleKey,
-                                                 Object needleValue)
+  private static boolean stackContainsNeedleList(Map<String, Object> stack, String needleKey, Object needleValue)
   {
     Object stackValue = stack.get(needleKey);
     if (stackValue instanceof List == false)
@@ -216,12 +214,12 @@ public class MockServicesUtil
    * 
    * Example:
    * 
-   * test/{id}/a/{hello} => test/%/a/%
+   * test/{id}/a/{hello} =&gt; test/%/a/%
    * 
    * </pre>
    * 
    * @param url
-   * @return String
+   * @return String - url with replaced dynamic variables
    */
   public static String getUrlWithReplacedDynVars(String url)
   {

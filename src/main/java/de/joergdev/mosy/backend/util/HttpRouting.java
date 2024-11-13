@@ -15,18 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import de.joergdev.mosy.api.APIConstants;
-import de.joergdev.mosy.api.model.HttpMethod;
-import de.joergdev.mosy.shared.Utils;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import de.joergdev.mosy.api.APIConstants;
+import de.joergdev.mosy.api.model.HttpMethod;
+import de.joergdev.mosy.shared.Utils;
 
 public class HttpRouting
 {
-  public static Response doRouting(String endpoint, String endpointCalled, String request,
-                                   HttpMethod httpMethod, MultivaluedMap<String, String> headerMap,
-                                   boolean isSOAP)
+  public static Response doRouting(String endpoint, String endpointCalled, String request, HttpMethod httpMethod, MultivaluedMap<String, String> headerMap,
+                                   boolean isSOAP, boolean isInternalRouting)
   {
     ByteArrayOutputStream outputStreamRequest = null;
     OutputStream httpOutRequest = null;
@@ -41,6 +40,9 @@ public class HttpRouting
 
       HttpURLConnection httpConn = (HttpURLConnection) new URL(endpoint).openConnection();
 
+      // Transfer header data
+      transferHeaderData(headerMap, httpConn, isInternalRouting);
+
       // Set the appropriate HTTP parameters.
       if (isWsdlRequest)
       {
@@ -49,9 +51,6 @@ public class HttpRouting
       }
       else
       {
-        // Transfer header data
-        transferHeaderData(headerMap, httpConn);
-
         byte[] bytesRequest = null;
 
         httpConn.setRequestMethod(httpMethod.name());
@@ -83,8 +82,7 @@ public class HttpRouting
         inputStreamResponse = httpConn.getErrorStream();
       }
 
-      inputStreamReaderResponse = new InputStreamReader(inputStreamResponse,
-          getCharset(getCharsetFromHeaders(httpConn.getHeaderFields())));
+      inputStreamReaderResponse = new InputStreamReader(inputStreamResponse, getCharset(getCharsetFromHeaders(httpConn.getHeaderFields())));
       bufReaderResponse = new BufferedReader(inputStreamReaderResponse);
 
       // Write the message response to a StringBuilder
@@ -103,21 +101,19 @@ public class HttpRouting
     }
     finally
     {
-      Utils.safeClose(outputStreamRequest, httpOutRequest, inputStreamResponse, inputStreamReaderResponse,
-          bufReaderResponse);
+      Utils.safeClose(outputStreamRequest, httpOutRequest, inputStreamResponse, inputStreamReaderResponse, bufReaderResponse);
     }
   }
 
-  private static Response buildResponse(String endpoint, String endpointCalled, boolean isWsdlRequest,
-                                        HttpURLConnection httpConn, StringBuilder buiResponse)
+  private static Response buildResponse(String endpoint, String endpointCalled, boolean isWsdlRequest, HttpURLConnection httpConn, StringBuilder buiResponse)
     throws IOException
   {
     String response = buiResponse.toString();
 
     if (isWsdlRequest)
     {
-      response = response.replace(endpoint.substring(0, endpoint.length() - "?wsdl".length()),
-          endpointCalled);
+      response = response.replace(endpoint.substring(0, endpoint.length() - "?wsdl".length()), //
+          endpointCalled.replace("?wsdl", ""));
     }
 
     ResponseBuilder responseBui = Response.status(httpConn.getResponseCode());
@@ -130,8 +126,7 @@ public class HttpRouting
     // transfer headers
     for (Entry<String, List<String>> headerEntry : Utils.nvlMap(httpConn.getHeaderFields()).entrySet())
     {
-      Optional<String> headerValueOpt = Utils.nvlCollection(headerEntry.getValue()).stream()
-          .filter(v -> v != null).findFirst();
+      Optional<String> headerValueOpt = Utils.nvlCollection(headerEntry.getValue()).stream().filter(v -> v != null).findFirst();
       if (headerValueOpt.isPresent())
       {
         responseBui = responseBui.header(headerEntry.getKey(), headerValueOpt.get());
@@ -141,12 +136,13 @@ public class HttpRouting
     return responseBui.build();
   }
 
-  private static void transferHeaderData(MultivaluedMap<String, String> headerMap, HttpURLConnection httpConn)
+  private static void transferHeaderData(MultivaluedMap<String, String> headerMap, HttpURLConnection httpConn, boolean isInternalRouting)
   {
     for (String headerKey : headerMap.keySet())
     {
-      if (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey)
-          || APIConstants.HTTP_HEADER_RECORD_SESSION_ID.equals(headerKey))
+      if (!isInternalRouting && (APIConstants.HTTP_HEADER_MOCK_PROFILE_NAME.equals(headerKey) //
+                                 || APIConstants.HTTP_HEADER_RECORD_SESSION_ID.equals(headerKey) //
+                                 || APIConstants.HTTP_HEADER_TENANT_ID.equals(headerKey)))
       {
         continue;
       }

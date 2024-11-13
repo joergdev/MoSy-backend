@@ -9,6 +9,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -17,7 +19,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "MOCK_PROFILE")
-public class MockProfile
+public class MockProfile implements TenantScoped
 {
   public static final int LENGTH_NAME = 200;
   public static final int LENGTH_DESCRIPTION = 2000;
@@ -26,6 +28,10 @@ public class MockProfile
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer mockProfileID;
+
+  @ManyToOne
+  @JoinColumn(name = "TENANT_ID", nullable = false)
+  private Tenant tenant;
 
   @Column(name = "CREATED")
   private LocalDateTime created;
@@ -149,5 +155,17 @@ public class MockProfile
   public void setMockData(List<MockDataMockProfile> mockData)
   {
     this.mockData = mockData;
+  }
+
+  @Override
+  public Tenant getTenant()
+  {
+    return tenant;
+  }
+
+  @Override
+  public void setTenant(Tenant tenant)
+  {
+    this.tenant = tenant;
   }
 }

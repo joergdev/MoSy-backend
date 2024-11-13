@@ -1,6 +1,8 @@
 package de.joergdev.mosy.backend.persistence.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.RecordSession;
@@ -13,8 +15,11 @@ public class RecordSessionDao extends AbstractDAO
   {
     StringBuilder sql = new StringBuilder();
     sql.append(" select * from RECORD_SESSION ");
+    sql.append(" where tenant_id = :tenant_id ");
 
     Query q = entityMgr.createNativeQuery(sql.toString(), RecordSession.class);
+
+    q.setParameter("tenant_id", tenantId);
 
     return q.getResultList();
   }
@@ -23,18 +28,32 @@ public class RecordSessionDao extends AbstractDAO
   {
     StringBuilder sql = new StringBuilder();
     sql.append("select count(record_session_id) from record_session ");
+    sql.append(" where tenant_id = :tenant_id ");
 
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    q.setParameter("tenant_id", tenantId);
 
     return Utils.bigInteger2Integer(getSingleResult(q));
   }
 
   public void clearAll()
   {
+    Map<String, Object> params = new HashMap<>();
+
     StringBuilder sql = new StringBuilder();
     sql.append(" delete from record_session ");
 
+    if (tenantId != null)
+    {
+      sql.append(" where tenant_id = :tenant_id ");
+
+      params.put("tenant_id", tenantId);
+    }
+
     Query q = entityMgr.createNativeQuery(sql.toString());
+
+    params.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
 
     executeUpdate(q);
   }

@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import de.joergdev.mosy.api.model.BaseData;
@@ -29,6 +32,7 @@ import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.globalconfig.Load;
 import de.joergdev.mosy.backend.bl.record.Save;
 import de.joergdev.mosy.backend.bl.utils.PersistenceUtil;
+import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.dao.InterfaceMethodDAO;
 import de.joergdev.mosy.backend.persistence.dao.MockDataDAO;
 import de.joergdev.mosy.backend.persistence.dao.MockProfileDao;
@@ -46,6 +50,8 @@ import de.joergdev.mosy.shared.Utils;
 
 public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommonResponse>
 {
+  private MultivaluedMap<String, String> requestHeader;
+
   private String mockResponse;
   private Integer mockResponseHttpCode;
   private MultivaluedMap<String, Object> mockResponseHeaders;
@@ -66,15 +72,21 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     leaveOn(de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathInterface()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath interface"));
 
-    leaveOn(!request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
+    requestHeader = request.getHttpHeaders().getRequestHeaders();
+    leaveOn(requestHeader == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header"));
   }
 
   @Override
   protected void execute()
   {
+    TenancyUtils.setInternTokenForTenancy(this, requestHeader);
+
     Interface dbInterface = PersistenceUtil.getDbInterfaceByServicePath(this, request.getServicePathInterface(), false);
     InterfaceType interfaceType = InterfaceType.getById(dbInterface.getType().getInterfaceTypeId());
+
+    // servicepath method must be set (except if rest)
+    leaveOn(!InterfaceType.REST.equals(interfaceType) && !request.isRouteOnly() && de.joergdev.mosy.shared.Utils.isEmpty(request.getServicePathMethod()),
+        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("servicepath method"));
 
     dbMethod = PersistenceUtil.getDbInterfaceMethodByServicePath(this, request.getServicePathMethod(), true, request.getHttpMethod(), dbInterface, false);
 
@@ -142,9 +154,25 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
       mockResponse = dbMockDataFound.getResponse();
       mockResponseHttpCode = dbMockDataFound.getHttpReturnCode();
 
+      setMockResponseHeaders(interfaceType);
+
       getDao(MockDataDAO.class).increaseCountCalls(dbMockDataFound.getMockDataId());
 
       sleepOnDelaySet(dbMockDataFound);
+    }
+  }
+
+  private void setMockResponseHeaders(InterfaceType interfaceType)
+  {
+    mockResponseHeaders = new MultivaluedHashMap<>();
+
+    if (InterfaceType.REST.equals(interfaceType))
+    {
+      mockResponseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    }
+    else if (InterfaceType.SOAP.equals(interfaceType))
+    {
+      mockResponseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML);
     }
   }
 
@@ -477,13 +505,12 @@ public class CaptureCommon extends AbstractBL<CaptureCommonRequest, CaptureCommo
     // route soap request
     if (InterfaceType.SOAP.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, request.getHttpHeaders().getRequestHeaders(), true);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, HttpMethod.POST, requestHeader, true, false);
     }
     // route rest request
     else if (InterfaceType.REST.equals(interfaceType))
     {
-      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), request.getHttpHeaders().getRequestHeaders(),
-          false);
+      return HttpRouting.doRouting(routingURL, request.getAbsolutePath(), requestContent, request.getHttpMethod(), requestHeader, false, false);
     }
 
     throw new IllegalArgumentException("routing not possible for interfaceType " + interfaceType);

@@ -1,24 +1,11 @@
 package de.joergdev.mosy.backend.api.impl;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
-import de.joergdev.mosy.api.APIConstants;
-import de.joergdev.mosy.api.model.HttpMethod;
-import de.joergdev.mosy.api.model.UrlArgument;
-import de.joergdev.mosy.api.request.mockservices.CustomRequestRequest;
-import de.joergdev.mosy.api.response.ResponseMessage;
-import de.joergdev.mosy.api.response.mockservices.CustomRequestResponse;
-import de.joergdev.mosy.backend.api.APIUtils;
-import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
-import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureSoapRequest;
-import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
-import de.joergdev.mosy.backend.bl.mockservices.CaptureCommon;
-import de.joergdev.mosy.backend.bl.mockservices.CaptureRest;
-import de.joergdev.mosy.backend.bl.mockservices.CaptureSoap;
-import de.joergdev.mosy.shared.Utils;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +21,20 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import de.joergdev.mosy.api.APIConstants;
+import de.joergdev.mosy.api.model.HttpMethod;
+import de.joergdev.mosy.api.model.UrlArgument;
+import de.joergdev.mosy.api.request.mockservices.CustomRequestRequest;
+import de.joergdev.mosy.api.response.ResponseMessage;
+import de.joergdev.mosy.api.response.mockservices.CustomRequestResponse;
+import de.joergdev.mosy.backend.api.APIUtils;
+import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureCommonRequest;
+import de.joergdev.mosy.backend.api.intern.request.mockservices.CaptureSoapRequest;
+import de.joergdev.mosy.backend.api.intern.response.mockservices.CaptureCommonResponse;
+import de.joergdev.mosy.backend.bl.mockservices.CaptureCommon;
+import de.joergdev.mosy.backend.bl.mockservices.CaptureRest;
+import de.joergdev.mosy.backend.bl.mockservices.CaptureSoap;
+import de.joergdev.mosy.shared.Utils;
 
 @Path(APIConstants.API_URL_BASE + "mock-services")
 public class MockServices
@@ -41,8 +42,7 @@ public class MockServices
   @Path("soap/{pth:.+}")
   @POST
   @Produces(value = MediaType.TEXT_XML)
-  public Response captureSoap(@PathParam("pth") String path, @Context HttpHeaders headers,
-                              @Context UriInfo uriInfo, String content)
+  public Response captureSoap(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo, String content)
   {
     CaptureSoapRequest blRequest = new CaptureSoapRequest();
     blRequest.setPath(path);
@@ -60,8 +60,7 @@ public class MockServices
   @Path("soap/{pth:.+}")
   @GET
   @Produces(value = MediaType.TEXT_HTML)
-  public Response captureSoapWsdlRequest(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                         @Context UriInfo uriInfo)
+  public Response captureSoapWsdlRequest(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo)
   {
     Map<String, List<String>> qryParams = uriInfo.getQueryParameters();
 
@@ -88,56 +87,40 @@ public class MockServices
 
   @Path("rest/{pth:.+}")
   @POST
-  public Response captureRestPost(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                  @Context UriInfo uriInfo, String content)
+  public Response captureRestPost(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo, String content)
   {
     return captureRest(path, HttpMethod.POST, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
   @PUT
-  public Response captureRestPut(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                 @Context UriInfo uriInfo, String content)
+  public Response captureRestPut(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo, String content)
   {
     return captureRest(path, HttpMethod.PUT, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
   @DELETE
-  public Response captureRestDelete(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                    @Context UriInfo uriInfo, String content)
+  public Response captureRestDelete(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo, String content)
   {
     return captureRest(path, HttpMethod.DELETE, headers, uriInfo, content);
   }
 
   @Path("rest/{pth:.+}")
   @GET
-  public Response captureRestGet(@PathParam("pth") String path, @Context HttpHeaders headers,
-                                 @Context UriInfo uriInfo, String content)
+  public Response captureRestGet(@PathParam("pth") String path, @Context HttpHeaders headers, @Context UriInfo uriInfo, String content)
   {
     return captureRest(path, HttpMethod.GET, headers, uriInfo, content);
   }
 
-  private Response captureRest(String path, HttpMethod httpMethod, HttpHeaders headers, UriInfo uriInfo,
-                               String content)
+  private Response captureRest(String path, HttpMethod httpMethod, HttpHeaders headers, UriInfo uriInfo, String content)
   {
     CaptureCommonRequest commonReq = new CaptureCommonRequest();
     commonReq.setHttpHeaders(headers);
     commonReq.setContent(content);
     commonReq.setServicePathInterface(path);
     commonReq.setHttpMethod(httpMethod);
-
-    MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-    if (queryParams != null)
-    {
-      for (Entry<String, List<String>> queryParamEntry : queryParams.entrySet())
-      {
-        for (String queryParamVal : queryParamEntry.getValue())
-        {
-          commonReq.getUrlArguments().add(new UrlArgument(queryParamEntry.getKey(), queryParamVal));
-        }
-      }
-    }
+    commonReq.getUrlArguments().addAll(UrlArgument.getUrlArgumentsFromMap(uriInfo.getQueryParameters()));
 
     CaptureCommonResponse commonResp = new CaptureCommonResponse();
 
@@ -171,20 +154,15 @@ public class MockServices
     return Response.status(Status.OK).entity(customResponse).build();
   }
 
-  private Response getResponseByCaptureResponse(CaptureCommonResponse blResponse,
-                                                Supplier<Integer> getterHttpReturnCode, boolean soap)
+  private Response getResponseByCaptureResponse(CaptureCommonResponse blResponse, Supplier<Integer> getterHttpReturnCode, boolean soap)
   {
     ResponseBuilder responseBui = null;
 
     if (blResponse.isStateOK())
     {
-      Integer httpReturnCode = getterHttpReturnCode == null
-          ? null
-          : getterHttpReturnCode.get();
+      Integer httpReturnCode = getterHttpReturnCode == null ? null : getterHttpReturnCode.get();
 
-      responseBui = Response.status(httpReturnCode == null
-          ? Status.OK
-          : Status.fromStatusCode(getterHttpReturnCode.get()));
+      responseBui = Response.status(httpReturnCode == null ? Status.OK : Status.fromStatusCode(getterHttpReturnCode.get()));
 
       String entity = blResponse.getResponse();
       if (entity != null)
@@ -228,7 +206,7 @@ public class MockServices
         String headerKey = headerEntry.getKey();
         List<Object> headerList = headerEntry.getValue();
 
-        if (!Utils.isEmpty(headerKey) && headerList != null)
+        if (!Utils.isEmpty(headerKey) && headerList != null && !isHeaderKeyBlacklisted(headerKey))
         {
           for (Object headerVal : headerList)
           {
@@ -242,6 +220,21 @@ public class MockServices
     }
 
     return responseBui.build();
+  }
+
+  /**
+   * <pre>
+   * This header keys should not be transfered to mock reponse.
+   * 
+   * - Transfer-Encoding => if set connection is aborted after timeout without response to client
+   * </pre>
+   * 
+   * @param headerKey
+   * @return boolean
+   */
+  private boolean isHeaderKeyBlacklisted(String headerKey)
+  {
+    return Arrays.asList("Transfer-Encoding").contains(headerKey);
   }
 
   private ResponseBuilder getResponseForFailedSoapRequest(String errorMsg)

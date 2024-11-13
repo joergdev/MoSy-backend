@@ -24,7 +24,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
 
   protected boolean isSubcall = false;
 
-  protected EntityManager entityMgr;
+  protected BLEntityManager entityMgr;
 
   public void executeCore(boolean throwException)
   {
@@ -71,8 +71,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
    * Fuegt dem Event die uebergebene ErrorMessage als Error hinzu und
    * wirft eine Exception um den Worklfow zu beenden.
    * 
-   * @param rspCode
-   * @throws BLException
+   * @param rspCode - ResponseCode
    */
   public void leave(ResponseCode rspCode)
   {
@@ -93,8 +92,8 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
    * Fuegt dem Event die uebergebene ErrorMessage als Error hinzu und
    * wirft eine Exception um den Worklfow zu beenden.
    * 
-   * @param respM
-   * @throws BLException
+   * @param respM - ResponseMessage
+   * @throws BLException - will allways be thrown 
    */
   public void leave(ResponseMessage respM)
     throws BLException
@@ -130,7 +129,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
   /**
    * Adding an message to response.
    * 
-   * @param rspCode
+   * @param rspCode - ResponseCode
    */
   public void addResponseCode(ResponseCode rspCode)
   {
@@ -140,7 +139,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
   /**
    * Adding an message to response.
    * 
-   * @param rspM
+   * @param rspM - ResponseMessage
    */
   public void addResponseMessage(ResponseMessage rspM)
   {
@@ -158,8 +157,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     return invokeSubBL(bl, request, response, true);
   }
 
-  public <L, M extends AbstractResponse> M invokeSubBL(AbstractBL<L, M> bl, L request, M response,
-                                                       boolean throwException)
+  public <L, M extends AbstractResponse> M invokeSubBL(AbstractBL<L, M> bl, L request, M response, boolean throwException)
   {
     bl.isSubcall = true;
 
@@ -173,10 +171,6 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     try
     {
       bl.executeCore(throwException);
-    }
-    catch (RuntimeException ex)
-    {
-      throw ex;
     }
     finally
     {
@@ -223,7 +217,15 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
 
   public void setEntityMgr(EntityManager entityMgr)
   {
-    this.entityMgr = entityMgr;
+    if (entityMgr != null)
+    {
+      // overwrite EntityManger for check tenancy before delegate to origin EntityManger
+      this.entityMgr = new BLEntityManager(entityMgr, getTenantId());
+    }
+    else
+    {
+      this.entityMgr = null;
+    }
   }
 
   public <L extends AbstractDAO> L getDao(Class<L> daoClass)
@@ -233,6 +235,7 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
       L dao = daoClass.newInstance();
 
       dao.setEntityMgr(entityMgr);
+      dao.setTenantId(getTenantId());
 
       return dao;
     }
@@ -249,5 +252,10 @@ public abstract class AbstractBL<T, K extends AbstractResponse>
     leaveOn(entity == null, ResponseCode.DATA_DOESNT_EXIST.withAddtitionalInfo(errorOnNull));
 
     return entity;
+  }
+
+  protected Integer getTenantId()
+  {
+    return TokenManagerService.getTenantId(token);
   }
 }
