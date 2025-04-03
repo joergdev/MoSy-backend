@@ -1,8 +1,8 @@
 package de.joergdev.mosy.backend.persistence.dao.core;
 
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
 import de.joergdev.mosy.backend.persistence.model.Tenant;
 import de.joergdev.mosy.shared.Utils;

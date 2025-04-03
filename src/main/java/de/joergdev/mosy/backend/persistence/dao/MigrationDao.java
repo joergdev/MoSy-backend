@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.persistence.dao;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 
 public class MigrationDao extends AbstractDAO

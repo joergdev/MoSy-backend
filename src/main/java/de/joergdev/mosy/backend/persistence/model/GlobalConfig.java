@@ -1,12 +1,14 @@
 package de.joergdev.mosy.backend.persistence.model;
 
 import java.time.LocalDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "GLOBAL_CONFIG")
@@ -18,15 +20,16 @@ public class GlobalConfig implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "TENANT_ID", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Tenant tenant;
 
-  @Column(name = "MOCK_ACTIVE_ON_STARTUP", columnDefinition = "INT(1)")
+  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INTEGER")
   private Boolean mockActiveOnStartup;
 
-  @Column(name = "MOCK_ACTIVE", columnDefinition = "INT(1)")
+  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INTEGER")
   private Boolean mockActive;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1)")
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INTEGER")
   private Boolean routingOnNoMockData;
 
   @Column(name = "TTL_RECORD_SESSION")

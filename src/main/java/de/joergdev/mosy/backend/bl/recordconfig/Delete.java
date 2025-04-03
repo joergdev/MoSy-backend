@@ -22,6 +22,7 @@ public class Delete extends AbstractBL<Integer, EmptyResponse>
         "recordConfig with id " + request);
 
     entityMgr.remove(dbRecordConfig);
+    entityMgr.flush();
   }
 
   @Override

@@ -1,13 +1,15 @@
 package de.joergdev.mosy.backend.persistence.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * @since 2.0
@@ -23,10 +25,12 @@ public class MockDataMockProfile
 
   @ManyToOne
   @JoinColumn(name = "MOCK_DATA_ID")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private MockData mockData;
 
   @ManyToOne
   @JoinColumn(name = "MOCK_PROFILE_ID")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private MockProfile mockProfile;
 
   /**

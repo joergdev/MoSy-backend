@@ -1,17 +1,19 @@
 package de.joergdev.mosy.backend.persistence.model;
 
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "INTERFACE_METHOD")
@@ -38,13 +40,13 @@ public class InterfaceMethod implements TenantScoped
   @Column(name = "HTTP_METHOD", length = 6)
   private String httpMethod;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INTEGER", nullable = false)
   private Boolean routingOnNoMockData;
 
-  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
+  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INTEGER", nullable = false)
   private Boolean mockActiveOnStartup;
 
-  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INT(1) default 0", nullable = false)
+  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INTEGER", nullable = false)
   private Boolean mockActive;
 
   @Column(name = "COUNT_CALLS", nullable = false)
@@ -52,6 +54,7 @@ public class InterfaceMethod implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "INTERFACE_ID")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Interface mockInterface;
 
   @OneToMany(mappedBy = "interfaceMethod", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)

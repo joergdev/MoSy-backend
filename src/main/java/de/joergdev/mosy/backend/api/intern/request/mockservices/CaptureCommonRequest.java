@@ -2,7 +2,7 @@ package de.joergdev.mosy.backend.api.intern.request.mockservices;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.api.model.UrlArgument;

@@ -1,13 +1,15 @@
 package de.joergdev.mosy.backend.persistence.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * @since 3.0
@@ -23,12 +25,13 @@ public class RecordPathParam
 
   @ManyToOne
   @JoinColumn(name = "RECORD_ID")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Record record;
 
-  @Column(name = "KEY", nullable = false, length = 100)
+  @Column(name = "KEY_NAME", nullable = false, length = 100)
   private String key;
 
-  @Column(name = "VALUE", nullable = false, length = 100)
+  @Column(name = "VALUE_TEXT", nullable = false, length = 100)
   private String value;
 
   public Integer getRecordPathParamId()

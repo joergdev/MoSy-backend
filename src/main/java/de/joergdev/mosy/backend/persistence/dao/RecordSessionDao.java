@@ -3,7 +3,7 @@ package de.joergdev.mosy.backend.persistence.dao;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.RecordSession;
 import de.joergdev.mosy.shared.Utils;
@@ -34,7 +34,7 @@ public class RecordSessionDao extends AbstractDAO
 
     q.setParameter("tenant_id", tenantId);
 
-    return Utils.bigInteger2Integer(getSingleResult(q));
+    return Utils.numberToInteger(getSingleResult(q));
   }
 
   public void clearAll()

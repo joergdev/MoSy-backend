@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.api.intern.request.mockservices;
 
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 public class CaptureSoapRequest
 {

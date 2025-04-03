@@ -1,19 +1,21 @@
 package de.joergdev.mosy.backend.api.impl;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import de.joergdev.mosy.api.APIConstants;
+import de.joergdev.mosy.api.model.BaseData;
 import de.joergdev.mosy.api.response.EmptyResponse;
 import de.joergdev.mosy.api.response.system.LoadBaseDataResponse;
 import de.joergdev.mosy.api.response.system.LoginResponse;
 import de.joergdev.mosy.backend.api.APIUtils;
 import de.joergdev.mosy.backend.bl.system.Boot;
+import de.joergdev.mosy.backend.bl.system.ImportData;
 import de.joergdev.mosy.backend.bl.system.LoadBaseData;
 import de.joergdev.mosy.backend.bl.system.Login;
 import de.joergdev.mosy.backend.bl.system.Logout;
@@ -41,6 +43,13 @@ public class System
   {
     return APIUtils.executeBL(null, new LoadBaseDataResponse(), new LoadBaseData(), token);
   }
+  
+  @Path(value = "import-data")
+  @POST
+  public Response importData(@HeaderParam(HttpHeaders.AUTHORIZATION) String token, BaseData apiBaseData)
+  {
+    return APIUtils.executeBL(apiBaseData, new EmptyResponse(), new ImportData(), token);
+  }
 
   @Path(value = "boot")
   @POST
@@ -60,7 +69,7 @@ public class System
   @GET
   public Response getVersion()
   {
-    return Response.ok().entity("4.0.1").build();
+    return Response.ok().entity("5.0.0").build();
   }
 
   @Path(value = "state-subsystem/{subsystem}")

@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.persistence.dao;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.shared.Utils;
 
@@ -13,6 +13,6 @@ public class InterfaceTypeDao extends AbstractDAO
 
     Query q = entityMgr.createNativeQuery(sql.toString());
 
-    return Utils.bigInteger2Integer(getSingleResult(q));
+    return Utils.numberToInteger(getSingleResult(q));
   }
 }

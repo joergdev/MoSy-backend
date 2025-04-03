@@ -2,17 +2,19 @@ package de.joergdev.mosy.backend.persistence.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "MOCK_DATA")
@@ -29,6 +31,7 @@ public class MockData implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "TENANT_ID", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Tenant tenant;
 
   @Column(name = "TITLE", length = LENGTH_TITLE)
@@ -37,10 +40,10 @@ public class MockData implements TenantScoped
   @Column(name = "CREATED", nullable = false, updatable = false)
   private LocalDateTime created;
 
-  @Column(name = "ACTIVE", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "ACTIVE", length = 1, nullable = false, columnDefinition = "INTEGER")
   private Boolean active;
 
-  @Column(name = "COMMON", length = 1, nullable = false, columnDefinition = "INT(1) default 0")
+  @Column(name = "COMMON", length = 1, nullable = false, columnDefinition = "INTEGER")
   private Boolean common;
 
   @Column(name = "COUNT_CALLS", nullable = false, updatable = false)
@@ -52,13 +55,13 @@ public class MockData implements TenantScoped
   @Column(name = "RESPONSE", length = LENGTH_RESPONSE, nullable = true)
   private String response;
 
-  @Column(name = "HTTP_RETURN_CODE", nullable = true, columnDefinition = "INT(4) default null")
+  @Column(name = "HTTP_RETURN_CODE", nullable = true, length = 4)
   private Integer httpReturnCode;
 
-  @Column(name = "REQUEST_HASH", nullable = false, columnDefinition = "INT(11) default 0")
+  @Column(name = "REQUEST_HASH", nullable = false, length = 11)
   private Integer requestHash;
 
-  @Column(name = "RESPONSE_HASH", nullable = false, columnDefinition = "INT(11) default 0")
+  @Column(name = "RESPONSE_HASH", nullable = false, length = 11)
   private Integer responseHash;
 
   @Column(name = "DELAY", nullable = true)
@@ -66,6 +69,7 @@ public class MockData implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "INTERFACE_METHOD_ID")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private InterfaceMethod interfaceMethod;
 
   @OneToMany(mappedBy = "mockData", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)

@@ -2,17 +2,19 @@ package de.joergdev.mosy.backend.persistence.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 /**
  * @since 2.0
@@ -31,6 +33,7 @@ public class MockProfile implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "TENANT_ID", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Tenant tenant;
 
   @Column(name = "CREATED")
@@ -39,10 +42,10 @@ public class MockProfile implements TenantScoped
   @Column(name = "NAME", length = LENGTH_NAME, nullable = true)
   private String name;
 
-  @Column(name = "PERSISTENT", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "PERSISTENT", length = 1, nullable = false, columnDefinition = "INTEGER")
   private Boolean persistent;
 
-  @Column(name = "USE_COMMON_MOCKS", length = 1, nullable = false, columnDefinition = "INT(1)")
+  @Column(name = "USE_COMMON_MOCKS", length = 1, nullable = false, columnDefinition = "INTEGER")
   private Boolean useCommonMocks;
 
   @Column(name = "DESCRIPTION", length = LENGTH_DESCRIPTION)

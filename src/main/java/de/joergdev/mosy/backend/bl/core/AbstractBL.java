@@ -2,7 +2,7 @@ package de.joergdev.mosy.backend.bl.core;
 
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import org.apache.log4j.Logger;
 import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseCode;
