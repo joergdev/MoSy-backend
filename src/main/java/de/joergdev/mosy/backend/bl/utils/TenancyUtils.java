@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.bl.utils;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseCode;
@@ -26,7 +26,7 @@ public class TenancyUtils
     {
       String tenantIdHeader = requestHeader.getFirst(APIConstants.HTTP_HEADER_TENANT_ID);
 
-      bl.leaveOn(!Utils.isNumeric(tenantIdHeader), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header - tenantId"));
+      bl.leaveOn(!Utils.isNumeric(tenantIdHeader), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request header - tenantId (" + tenantIdHeader + ")"));
 
       tenantId = Integer.valueOf(tenantIdHeader);
     }

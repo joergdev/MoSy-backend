@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.MockProfile;
 import de.joergdev.mosy.shared.Utils;
@@ -64,7 +64,7 @@ public class MockProfileDao extends AbstractDAO
 
     q.setParameter("tenant_id", tenantId);
 
-    return Utils.bigInteger2Integer(getSingleResult(q));
+    return Utils.numberToInteger(getSingleResult(q));
   }
 
   public void clearAllNonPersistent()

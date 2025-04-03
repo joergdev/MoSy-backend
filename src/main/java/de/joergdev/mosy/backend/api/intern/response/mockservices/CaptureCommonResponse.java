@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.api.intern.response.mockservices;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import de.joergdev.mosy.api.model.InterfaceMethod;
 import de.joergdev.mosy.api.response.AbstractResponse;
 

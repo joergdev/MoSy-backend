@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.shared.Utils;
@@ -82,15 +82,19 @@ public class HttpRouting
         inputStreamResponse = httpConn.getErrorStream();
       }
 
-      inputStreamReaderResponse = new InputStreamReader(inputStreamResponse, getCharset(getCharsetFromHeaders(httpConn.getHeaderFields())));
-      bufReaderResponse = new BufferedReader(inputStreamReaderResponse);
-
-      // Write the message response to a StringBuilder
-      String responseString = "";
       StringBuilder buiResponse = new StringBuilder();
-      while ((responseString = bufReaderResponse.readLine()) != null)
+
+      if (inputStreamResponse != null)
       {
-        buiResponse.append(responseString);
+        inputStreamReaderResponse = new InputStreamReader(inputStreamResponse, getCharset(getCharsetFromHeaders(httpConn.getHeaderFields())));
+        bufReaderResponse = new BufferedReader(inputStreamReaderResponse);
+
+        // Write the message response to a StringBuilder
+        String responseString = "";
+        while ((responseString = bufReaderResponse.readLine()) != null)
+        {
+          buiResponse.append(responseString);
+        }
       }
 
       return buildResponse(endpoint, endpointCalled, isWsdlRequest, httpConn, buiResponse);

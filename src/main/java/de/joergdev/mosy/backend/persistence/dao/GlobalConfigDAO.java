@@ -2,7 +2,7 @@ package de.joergdev.mosy.backend.persistence.dao;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.GlobalConfig;
 

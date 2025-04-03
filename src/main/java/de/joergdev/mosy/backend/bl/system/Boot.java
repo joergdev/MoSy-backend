@@ -14,7 +14,6 @@ import de.joergdev.mosy.backend.Config;
 import de.joergdev.mosy.backend.bl.core.AbstractBL;
 import de.joergdev.mosy.backend.bl.globalconfig.Save;
 import de.joergdev.mosy.backend.bl.utils.TenancyUtils;
-import de.joergdev.mosy.backend.persistence.Constraint;
 import de.joergdev.mosy.backend.persistence.dao.DbConfigDAO;
 import de.joergdev.mosy.backend.persistence.dao.GlobalConfigDAO;
 import de.joergdev.mosy.backend.persistence.dao.InterfaceDao;
@@ -45,8 +44,6 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
   @Override
   protected void execute()
   {
-    alterConstraintsIfNecessary();
-
     createDbConfigIfNotExisting();
     createDefaultTenantForNonMultiTanencyIfNotExisting();
     createInterfaceTypesIfNotExisting();
@@ -174,52 +171,6 @@ public class Boot extends AbstractBL<Void, EmptyResponse>
     }
 
     return false;
-  }
-
-  /**
-   * JPA doesnt generate "ON DELETE CASCADE" so we do this here (once)
-   */
-  private void alterConstraintsIfNecessary()
-  {
-    DbConfigDAO dao = getDao(DbConfigDAO.class);
-
-    alterConstraintIfNecessary(dao, "GLOBAL_CONFIG", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "INTERFACE", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "MOCK_DATA", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "MOCK_PROFILE", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "RECORD", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "RECORD_CONFIG", "TENANT_ID");
-    alterConstraintIfNecessary(dao, "RECORD_SESSION", "TENANT_ID");
-
-    alterConstraintIfNecessary(dao, "MOCK_DATA_MOCK_PROFILE", "MOCK_DATA_ID");
-    alterConstraintIfNecessary(dao, "MOCK_DATA_MOCK_PROFILE", "MOCK_PROFILE_ID");
-
-    alterConstraintIfNecessary(dao, "MOCK_DATA_PATH_PARAM", "MOCK_DATA_ID");
-    alterConstraintIfNecessary(dao, "MOCK_DATA_URL_ARGUMENT", "MOCK_DATA_ID");
-
-    alterConstraintIfNecessary(dao, "RECORD_PATH_PARAM", "RECORD_ID");
-    alterConstraintIfNecessary(dao, "RECORD_URL_ARGUMENT", "RECORD_ID");
-
-    alterConstraintIfNecessary(dao, "INTERFACE_METHOD", "INTERFACE_ID");
-    alterConstraintIfNecessary(dao, "RECORD_CONFIG", "INTERFACE_ID");
-
-    alterConstraintIfNecessary(dao, "MOCK_DATA", "INTERFACE_METHOD_ID");
-    alterConstraintIfNecessary(dao, "RECORD", "INTERFACE_METHOD_ID");
-    alterConstraintIfNecessary(dao, "RECORD_CONFIG", "INTERFACE_METHOD_ID");
-
-    alterConstraintIfNecessary(dao, "RECORD", "RECORD_SESSION_ID");
-  }
-
-  private void alterConstraintIfNecessary(DbConfigDAO dao, String tbl, String col)
-  {
-    Constraint constraint = dao.findConstraint(tbl, col);
-
-    if (!constraint.isDeleteCascade())
-    {
-      constraint.addDeleteCascade();
-
-      dao.alterConstraint(constraint);
-    }
   }
 
   private void createInterfaceTypesIfNotExisting()

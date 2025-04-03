@@ -3,7 +3,7 @@ package de.joergdev.mosy.backend.persistence.dao;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 
 public class MockDataDAO extends AbstractDAO

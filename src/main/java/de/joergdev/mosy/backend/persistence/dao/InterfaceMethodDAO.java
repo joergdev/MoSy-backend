@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import de.joergdev.mosy.api.model.HttpMethod;
 import de.joergdev.mosy.backend.persistence.dao.core.AbstractDAO;
 import de.joergdev.mosy.backend.persistence.model.InterfaceMethod;

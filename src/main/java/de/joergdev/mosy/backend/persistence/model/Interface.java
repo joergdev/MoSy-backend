@@ -1,18 +1,20 @@
 package de.joergdev.mosy.backend.persistence.model;
 
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "INTERFACE")
@@ -29,9 +31,10 @@ public class Interface implements TenantScoped
 
   @ManyToOne
   @JoinColumn(name = "TENANT_ID", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Tenant tenant;
 
-  @Column(name = "NAME", length = LENGTH_NAME, unique = true, nullable = false)
+  @Column(name = "NAME", length = LENGTH_NAME, nullable = false)
   private String name;
 
   @ManyToOne
@@ -41,16 +44,16 @@ public class Interface implements TenantScoped
   @Column(name = "SERVICE_PATH", length = LENGTH_SERVICE_PATH)
   private String servicePath;
 
-  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INT(1)")
+  @Column(name = "MOCK_ACTIVE_ON_STARTUP", length = 1, columnDefinition = "INTEGER")
   private Boolean mockActiveOnStartup;
 
-  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INT(1)")
+  @Column(name = "MOCK_ACTIVE", length = 1, columnDefinition = "INTEGER")
   private Boolean mockActive;
 
   @Column(name = "ROUTING_URL", length = LENGTH_ROUTING_URL)
   private String routingUrl;
 
-  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INT(1)")
+  @Column(name = "ROUTING_ON_NO_MOCKDATA", length = 1, columnDefinition = "INTEGER")
   private Boolean routingOnNoMockData;
 
   @OneToMany(mappedBy = "mockInterface", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)

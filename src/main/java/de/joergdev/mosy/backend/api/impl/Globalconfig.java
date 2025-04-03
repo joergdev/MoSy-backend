@@ -1,10 +1,10 @@
 package de.joergdev.mosy.backend.api.impl;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
 import de.joergdev.mosy.api.APIConstants;
 import de.joergdev.mosy.api.model.BaseData;
 import de.joergdev.mosy.api.response.EmptyResponse;

@@ -26,22 +26,19 @@ public class Save extends AbstractBL<Interface, SaveResponse>
   {
     leaveOn(request == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("request"));
 
-    leaveOn(Utils.isEmpty(request.getName())
-            || request.getName().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_NAME,
+    leaveOn(Utils.isEmpty(request.getName()) || request.getName().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_NAME,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("name"));
 
     leaveOn(request.getType() == null, ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("type"));
 
-    leaveOn(Boolean.TRUE.equals(request.getRoutingOnNoMockData()) && request.getType().directRoutingPossible
-            && Utils.isEmpty(request.getRoutingUrl()),
+    leaveOn(Boolean.TRUE.equals(request.getRoutingOnNoMockData()) && request.getType().directRoutingPossible && Utils.isEmpty(request.getRoutingUrl()),
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("routingURL"));
 
     leaveOn(!Utils.isEmpty(request.getRoutingUrl()) && !request.getType().directRoutingPossible,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("routingURL not allowed"));
 
-    leaveOn(!Utils.isEmpty(request.getRoutingUrl())
-            && request.getRoutingUrl()
-                .length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_ROUTING_URL,
+    leaveOn(
+        !Utils.isEmpty(request.getRoutingUrl()) && request.getRoutingUrl().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_ROUTING_URL,
         ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("routingURL"));
 
     String servicePath = request.getServicePath();
@@ -50,31 +47,26 @@ public class Save extends AbstractBL<Interface, SaveResponse>
       leaveOn(servicePath.length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_SERVICE_PATH,
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("service path"));
 
-      leaveOn(InterfaceType.REST.equals(request.getType())
-              && (servicePath.contains("{") || servicePath.contains("}")),
+      leaveOn(InterfaceType.REST.equals(request.getType()) && (servicePath.contains("{") || servicePath.contains("}")),
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("service path"));
     }
 
     for (InterfaceMethod method : request.getMethods())
     {
-      leaveOn(method.isDelete() && method.getInterfaceMethodId() == null, ResponseCode.INVALID_INPUT_PARAMS
-          .withAddtitionalInfo("method delete set but not id. Name: " + method.getName()));
+      leaveOn(method.isDelete() && method.getInterfaceMethodId() == null,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("method delete set but not id. Name: " + method.getName()));
 
-      leaveOn(!method.isDelete() && Utils.isEmpty(method.getName()), ResponseCode.INVALID_INPUT_PARAMS
-          .withAddtitionalInfo("method name may not be empty. ID: " + method.getInterfaceMethodId()));
+      leaveOn(!method.isDelete() && Utils.isEmpty(method.getName()),
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("method name may not be empty. ID: " + method.getInterfaceMethodId()));
 
-      leaveOn(!Utils.isEmpty(method.getName())
-              && method.getName().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_NAME,
+      leaveOn(!Utils.isEmpty(method.getName()) && method.getName().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_NAME,
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("method name too long: " + method.getName()));
 
       leaveOn(!Utils.isEmpty(method.getServicePath())
-              && method.getServicePath()
-                  .length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_SERVICE_PATH,
-          ResponseCode.INVALID_INPUT_PARAMS
-              .withAddtitionalInfo("method service path too long: " + method.getName()));
+              && method.getServicePath().length() > de.joergdev.mosy.backend.persistence.model.Interface.LENGTH_SERVICE_PATH,
+          ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("method service path too long: " + method.getName()));
 
-      leaveOn(!method.isDelete() && InterfaceType.REST.equals(request.getType())
-              && method.getHttpMethod() == null,
+      leaveOn(!method.isDelete() && InterfaceType.REST.equals(request.getType()) && method.getHttpMethod() == null,
           ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("httpMethod"));
     }
   }
@@ -116,14 +108,11 @@ public class Save extends AbstractBL<Interface, SaveResponse>
     if (request.getType() != null)
     {
       Integer reqTypID = request.getType().id;
-      Integer dbTypID = dbInterface.getType() == null
-          ? null
-          : dbInterface.getType().getInterfaceTypeId();
+      Integer dbTypID = dbInterface.getType() == null ? null : dbInterface.getType().getInterfaceTypeId();
 
       if (!reqTypID.equals(dbTypID))
       {
-        dbInterface.setType(
-            entityMgr.find(de.joergdev.mosy.backend.persistence.model.InterfaceType.class, reqTypID));
+        dbInterface.setType(entityMgr.find(de.joergdev.mosy.backend.persistence.model.InterfaceType.class, reqTypID));
       }
     }
     else
@@ -230,10 +219,8 @@ public class Save extends AbstractBL<Interface, SaveResponse>
 
     // check unique service path
     leaveOn(request.getServicePath() != null
-            && getDao(InterfaceDao.class).existsByServicePath(request.getServicePath(),
-                InterfaceType.REST.equals(request.getType()), id),
-        ResponseCode.DATA_ALREADY_EXISTS
-            .withAddtitionalInfo("interface with service path: " + request.getServicePath()));
+            && getDao(InterfaceDao.class).existsByServicePath(request.getServicePath(), InterfaceType.REST.equals(request.getType()), id),
+        ResponseCode.DATA_ALREADY_EXISTS.withAddtitionalInfo("interface with service path: " + request.getServicePath()));
   }
 
   private void saveMethods()
@@ -242,20 +229,19 @@ public class Save extends AbstractBL<Interface, SaveResponse>
     {
       de.joergdev.mosy.api.model.RecordConfig apiRecordConfig = new de.joergdev.mosy.api.model.RecordConfig();
 
-      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = loadOrCreateDbMethod(dbInterface,
-          apiMethod, apiRecordConfig);
+      de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod = loadOrCreateDbMethod(dbInterface, apiMethod, apiRecordConfig);
 
       if (apiMethod.isDelete())
       {
         entityMgr.remove(dbMethod);
+        entityMgr.flush();
       }
       else
       {
         checkUniqueDataInterfaceMethod(apiMethod);
 
         // base data
-        ObjectUtils.copyValues(apiMethod, dbMethod, "mockInterface", "mockData", "recordConfigs",
-            "httpMethod");
+        ObjectUtils.copyValues(apiMethod, dbMethod, "mockInterface", "mockData", "recordConfigs", "httpMethod");
         setMethodHttpMethod(apiMethod, dbMethod);
         setMethodServicePathIntern(apiMethod, dbMethod);
 
@@ -271,8 +257,7 @@ public class Save extends AbstractBL<Interface, SaveResponse>
     }
   }
 
-  private void setMethodServicePathIntern(InterfaceMethod apiMethod,
-                                          de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod)
+  private void setMethodServicePathIntern(InterfaceMethod apiMethod, de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod)
   {
     if (InterfaceType.REST.equals(request.getType()))
     {
@@ -284,8 +269,7 @@ public class Save extends AbstractBL<Interface, SaveResponse>
     }
   }
 
-  private void setMethodHttpMethod(InterfaceMethod apiMethod,
-                                   de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod)
+  private void setMethodHttpMethod(InterfaceMethod apiMethod, de.joergdev.mosy.backend.persistence.model.InterfaceMethod dbMethod)
   {
     HttpMethod httpMethod = apiMethod.getHttpMethod();
     if (httpMethod != null)
@@ -302,13 +286,12 @@ public class Save extends AbstractBL<Interface, SaveResponse>
 
     if (apiMethod.getInterfaceMethodId() != null)
     {
-      dbMethod = findDbEntity(de.joergdev.mosy.backend.persistence.model.InterfaceMethod.class,
-          apiMethod.getInterfaceMethodId(), "interface method with id " + apiMethod.getInterfaceMethodId());
+      dbMethod = findDbEntity(de.joergdev.mosy.backend.persistence.model.InterfaceMethod.class, apiMethod.getInterfaceMethodId(),
+          "interface method with id " + apiMethod.getInterfaceMethodId());
 
       // load via dao and not via model (lazy loading list) for not loading all
       // recordconfigs (performance)
-      RecordConfig dbRecordConf = getDao(RecordConfigDAO.class)
-          .getByInterfaceMethodId(apiMethod.getInterfaceMethodId());
+      RecordConfig dbRecordConf = getDao(RecordConfigDAO.class).getByInterfaceMethodId(apiMethod.getInterfaceMethodId());
       if (dbRecordConf != null)
       {
         apiRecordConfig.setRecordConfigId(dbRecordConf.getRecordConfigId());
@@ -327,19 +310,15 @@ public class Save extends AbstractBL<Interface, SaveResponse>
   private void checkUniqueDataInterfaceMethod(InterfaceMethod apiMethod)
   {
     // check unique name
-    leaveOn(
-        getDao(InterfaceMethodDAO.class).existsByInterfaceIdName(id, apiMethod.getName(),
-            apiMethod.getInterfaceMethodId()),
-        ResponseCode.DATA_ALREADY_EXISTS
-            .withAddtitionalInfo("interface method with name: " + apiMethod.getName()));
+    leaveOn(getDao(InterfaceMethodDAO.class).existsByInterfaceIdName(id, apiMethod.getName(), apiMethod.getInterfaceMethodId()),
+        ResponseCode.DATA_ALREADY_EXISTS.withAddtitionalInfo("interface method with name: " + apiMethod.getName()));
 
     // check unique service path
     String servicePath = apiMethod.getServicePath();
     leaveOn(servicePath != null
-            && getDao(InterfaceMethodDAO.class).existsByInterfaceIdServicePath(id, servicePath, false,
-                apiMethod.getHttpMethod(), apiMethod.getInterfaceMethodId()),
-        ResponseCode.DATA_ALREADY_EXISTS
-            .withAddtitionalInfo("interface method with service path: " + apiMethod.getServicePath()));
+            && getDao(InterfaceMethodDAO.class).existsByInterfaceIdServicePath(id, servicePath, false, apiMethod.getHttpMethod(),
+                apiMethod.getInterfaceMethodId()),
+        ResponseCode.DATA_ALREADY_EXISTS.withAddtitionalInfo("interface method with service path: " + apiMethod.getServicePath()));
   }
 
   /**
@@ -351,22 +330,23 @@ public class Save extends AbstractBL<Interface, SaveResponse>
    * @param interfaceMethod
    * @param apiRecordEnabled
    */
-  private void saveRecordConfig(de.joergdev.mosy.api.model.RecordConfig apiRecordConfig,
-                                Interface mockInterface, InterfaceMethod interfaceMethod,
+  private void saveRecordConfig(de.joergdev.mosy.api.model.RecordConfig apiRecordConfig, Interface mockInterface, InterfaceMethod interfaceMethod,
                                 Boolean apiRecordEnabled)
   {
     if (apiRecordEnabled == null)
     {
       if (apiRecordConfig.getRecordConfigId() != null)
       {
-        invokeSubBL(new de.joergdev.mosy.backend.bl.recordconfig.Delete(),
-            apiRecordConfig.getRecordConfigId(), new EmptyResponse());
+        // remove recordConfig from dbInterface, otherwise recordConfig cannot be deleted (if needed).
+        // cause: recordConfig instance is part of dbInterface instance, hibernate dont like this then...
+        dbInterface.setRecordConfig(null);
+
+        invokeSubBL(new de.joergdev.mosy.backend.bl.recordconfig.Delete(), apiRecordConfig.getRecordConfigId(), new EmptyResponse());
       }
     }
     else
     {
-      if (Utils.isEqual(apiRecordEnabled, apiRecordConfig.getEnabled())
-          && apiRecordConfig.getRecordConfigId() != null)
+      if (Utils.isEqual(apiRecordEnabled, apiRecordConfig.getEnabled()) && apiRecordConfig.getRecordConfigId() != null)
       {
         return;
       }
@@ -376,8 +356,7 @@ public class Save extends AbstractBL<Interface, SaveResponse>
       apiRecordConfig.setMockInterface(mockInterface);
       apiRecordConfig.setInterfaceMethod(interfaceMethod);
 
-      invokeSubBL(new de.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig,
-          new de.joergdev.mosy.api.response.recordconfig.SaveResponse());
+      invokeSubBL(new de.joergdev.mosy.backend.bl.recordconfig.Save(), apiRecordConfig, new de.joergdev.mosy.api.response.recordconfig.SaveResponse());
     }
 
   }

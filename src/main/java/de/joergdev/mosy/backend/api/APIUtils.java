@@ -1,10 +1,10 @@
 package de.joergdev.mosy.backend.api;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
 import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseCode;

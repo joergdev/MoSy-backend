@@ -1,6 +1,6 @@
 package de.joergdev.mosy.backend.persistence;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public interface EntityManagerProvider
 {

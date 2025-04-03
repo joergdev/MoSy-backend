@@ -11,8 +11,7 @@ public class Delete extends AbstractBL<Integer, EmptyResponse>
   @Override
   protected void validateInput()
   {
-    leaveOn(request == null || !Utils.isPositive(request),
-        ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("id"));
+    leaveOn(request == null || !Utils.isPositive(request), ResponseCode.INVALID_INPUT_PARAMS.withAddtitionalInfo("id"));
   }
 
   @Override
