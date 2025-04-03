@@ -31,7 +31,7 @@ import de.joergdev.mosy.shared.Utils;
 
 public class Boot extends AbstractBL<Void, EmptyResponse>
 {
-  private static final Integer[] ACTUAL_VERSION = new Integer[] {4, 0, 0};
+  private static final Integer[] ACTUAL_VERSION = new Integer[] {5, 0, 0};
 
   private DbConfig dbConfig;
 
