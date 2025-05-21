@@ -5,7 +5,8 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.ResponseMessage;
@@ -16,7 +17,7 @@ import de.joergdev.mosy.backend.persistence.EntityManagerProviderService;
 
 public class APIUtils
 {
-  private static final Logger LOG = Logger.getLogger(APIUtils.class);
+  private static final Logger LOG = LogManager.getLogger(APIUtils.class);
 
   public static <T extends AbstractResponse, R> Response executeBL(R request, T response, AbstractBL<R, T> bl)
   {

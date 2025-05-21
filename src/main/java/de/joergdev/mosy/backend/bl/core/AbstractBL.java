@@ -2,8 +2,9 @@ package de.joergdev.mosy.backend.bl.core;
 
 import java.util.Objects;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import jakarta.persistence.EntityManager;
-import org.apache.log4j.Logger;
 import de.joergdev.mosy.api.response.AbstractResponse;
 import de.joergdev.mosy.api.response.ResponseCode;
 import de.joergdev.mosy.api.response.ResponseMessage;
@@ -12,7 +13,7 @@ import de.joergdev.mosy.backend.security.TokenManagerService;
 
 public abstract class AbstractBL<T, K extends AbstractResponse>
 {
-  protected final Logger log = Logger.getLogger(getClass());
+  protected final Logger log = LogManager.getLogger(getClass());
 
   protected T request;
 

@@ -69,7 +69,7 @@ public class System
   @GET
   public Response getVersion()
   {
-    return Response.ok().entity("5.0.0").build();
+    return Response.ok().entity("5.1.0").build();
   }
 
   @Path(value = "state-subsystem/{subsystem}")
